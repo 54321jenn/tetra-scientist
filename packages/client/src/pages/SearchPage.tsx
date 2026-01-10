@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import './SearchPage.css';
 
 // Icon components
@@ -37,6 +38,8 @@ interface SearchItem {
 }
 
 function SearchPage() {
+  const navigate = useNavigate();
+
   const savedSearches: SearchItem[] = [
     {
       icon: <FilterIcon />,
@@ -101,7 +104,12 @@ function SearchPage() {
           <h3 className="search-section-title">Saved Searches</h3>
           <div className="search-list">
             {savedSearches.map((item, index) => (
-              <div key={index} className="search-list-item">
+              <div
+                key={index}
+                className="search-list-item"
+                onClick={() => navigate('/search-results')}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="search-item-icon">{item.icon}</div>
                 <div className="search-item-text">
                   <div className="search-item-title">{item.title}</div>

@@ -6,6 +6,8 @@ const pageTitles: Record<string, string> = {
   '/': 'Tetra Data Platform',
   '/data-table': 'My Data',
   '/search': 'Search',
+  '/search-results': 'Search Results',
+  '/file-details': 'File Details',
   '/apps': 'Apps',
   '/contributing': 'Contributing',
 };
@@ -19,13 +21,30 @@ function Toolbar({ isSidebarCollapsed, onToggleSidebar }: ToolbarProps) {
   const location = useLocation();
   const title = pageTitles[location.pathname] || 'Page';
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const orgDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
+  // Mock organization data
+  const currentOrg = {
+    name: 'TetraScience Demo',
+    slug: 'tetrascience-demo'
+  };
+
+  const organizations = [
+    { name: 'TetraScience Demo', slug: 'tetrascience-demo' },
+    { name: 'Research Lab Alpha', slug: 'research-lab-alpha' },
+    { name: 'Test Org', slug: 'test-lab' },
+  ];
+
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsAccountDropdownOpen(false);
+      }
+      if (orgDropdownRef.current && !orgDropdownRef.current.contains(event.target as Node)) {
+        setIsOrgDropdownOpen(false);
       }
     };
 
@@ -51,6 +70,41 @@ function Toolbar({ isSidebarCollapsed, onToggleSidebar }: ToolbarProps) {
           <h1 className="toolbar-title">{title}</h1>
         </div>
         <div className="toolbar-right">
+          {/* Organization Selector */}
+          <div className="org-selector-container" ref={orgDropdownRef}>
+            <button
+              className="org-selector-btn"
+              onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
+              aria-label="Select organization"
+            >
+              <div className="org-selector-content">
+                <div className="org-name">{currentOrg.name}</div>
+                <div className="org-slug">{currentOrg.slug}</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+
+            {isOrgDropdownOpen && (
+              <div className="org-dropdown">
+                {organizations.map((org) => (
+                  <button
+                    key={org.slug}
+                    className={`org-dropdown-item ${org.slug === currentOrg.slug ? 'active' : ''}`}
+                    onClick={() => {
+                      console.log('Selected org:', org);
+                      setIsOrgDropdownOpen(false);
+                    }}
+                  >
+                    <div className="org-dropdown-name">{org.name}</div>
+                    <div className="org-dropdown-slug">{org.slug}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Help Icon */}
           <button
             className="toolbar-icon-btn"
