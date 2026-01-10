@@ -32,3 +32,5 @@ _No data produced_
 ## Changelog
 
 ### v1.1.0
+- Initial deployment setup
+- Fixed platform-specific dependencies for macOS ARM64
