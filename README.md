@@ -34,3 +34,4 @@ _No data produced_
 ### v1.1.0
 - Initial deployment setup
 - Fixed platform-specific dependencies for macOS ARM64
+- Configured Vercel deployment for main branch
