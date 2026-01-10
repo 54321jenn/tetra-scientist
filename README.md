@@ -35,3 +35,4 @@ _No data produced_
 - Initial deployment setup
 - Fixed platform-specific dependencies for macOS ARM64
 - Configured Vercel deployment for main branch
+- Fixed vercel.json schema validation errors
