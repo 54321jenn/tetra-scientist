@@ -3,6 +3,11 @@
   "outputDirectory": "packages/client/dist",
   "installCommand": "yarn install",
   "framework": "vite",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
