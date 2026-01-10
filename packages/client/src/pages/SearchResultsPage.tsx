@@ -1,4 +1,3 @@
-import { Table, TableColumn } from '@tetrascience-npm/tetrascience-react-ui';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import './SearchResultsPage.css';
@@ -266,14 +265,6 @@ function SearchResultsPage() {
     ),
   }));
 
-  // Define table columns
-  const columns: TableColumn<typeof dataWithCheckbox[0]>[] = [
-    { key: 'checkbox', header: '', width: '50px' },
-    { key: 'nameWithIcon', header: 'Name' },
-    { key: 'sourceLocation', header: 'Source Location' },
-    { key: 'uploadedAtFormatted', header: 'Uploaded At' },
-  ];
-
   return (
     <div className="search-results-page">
       <div className="search-bar-container">
@@ -330,10 +321,26 @@ function SearchResultsPage() {
       </div>
 
       <div className="search-results-content" ref={tableRef}>
-        <Table
-          data={dataWithCheckbox}
-          columns={columns}
-        />
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid #ddd' }}>
+              <th style={{ padding: '12px', textAlign: 'left', width: '50px' }}></th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>Name</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>Source Location</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>Uploaded At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dataWithCheckbox.map((row) => (
+              <tr key={row.id} style={{ borderBottom: '1px solid #eee' }}>
+                <td style={{ padding: '12px' }}>{row.checkbox}</td>
+                <td style={{ padding: '12px' }}>{row.nameWithIcon}</td>
+                <td style={{ padding: '12px' }}>{row.sourceLocation}</td>
+                <td style={{ padding: '12px' }}>{row.uploadedAtFormatted}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

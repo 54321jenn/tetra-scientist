@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
-import '@tetrascience-npm/tetrascience-react-ui/index.css';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import DataTablePage from './pages/DataTablePage';

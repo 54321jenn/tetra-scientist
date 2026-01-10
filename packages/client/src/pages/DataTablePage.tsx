@@ -1,5 +1,3 @@
-import { Table, TableColumn } from '@tetrascience-npm/tetrascience-react-ui';
-
 interface SampleData {
   id: number;
   name: string;
@@ -17,21 +15,33 @@ const sampleData: SampleData[] = [
   { id: 5, name: 'Eve Davis', email: 'eve@example.com', status: 'Pending', date: '2024-01-19' },
 ];
 
-// Define table columns
-const columns: TableColumn<SampleData>[] = [
-  { key: 'id', header: 'ID', width: '80px' },
-  { key: 'name', header: 'Name', width: '200px' },
-  { key: 'email', header: 'Email', width: '250px' },
-  { key: 'status', header: 'Status', width: '120px' },
-  { key: 'date', header: 'Date', width: '150px' },
-];
-
 function DataTablePage() {
   return (
     <div className="app-container">
       <div className="demo-grid">
         <div style={{ gridColumn: '1 / -1' }}>
-          <Table data={sampleData} columns={columns} />
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #ddd' }}>
+                <th style={{ padding: '12px', textAlign: 'left', width: '80px' }}>ID</th>
+                <th style={{ padding: '12px', textAlign: 'left', width: '200px' }}>Name</th>
+                <th style={{ padding: '12px', textAlign: 'left', width: '250px' }}>Email</th>
+                <th style={{ padding: '12px', textAlign: 'left', width: '120px' }}>Status</th>
+                <th style={{ padding: '12px', textAlign: 'left', width: '150px' }}>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sampleData.map((row) => (
+                <tr key={row.id} style={{ borderBottom: '1px solid #eee' }}>
+                  <td style={{ padding: '12px' }}>{row.id}</td>
+                  <td style={{ padding: '12px' }}>{row.name}</td>
+                  <td style={{ padding: '12px' }}>{row.email}</td>
+                  <td style={{ padding: '12px' }}>{row.status}</td>
+                  <td style={{ padding: '12px' }}>{row.date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

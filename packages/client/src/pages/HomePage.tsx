@@ -1,6 +1,10 @@
-import { Card } from '@tetrascience-npm/tetrascience-react-ui';
 import { Link } from 'react-router-dom';
 import './HomePage.css';
+
+// Simple Card component replacement
+const Card = ({ className, children }: { className?: string; children: React.ReactNode }) => (
+  <div className={`card ${className || ''}`}>{children}</div>
+);
 
 // Icon components
 const StarIcon = () => (
