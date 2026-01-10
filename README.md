@@ -36,3 +36,4 @@ _No data produced_
 - Fixed platform-specific dependencies for macOS ARM64
 - Configured Vercel deployment for main branch
 - Fixed vercel.json schema validation errors
+- Updated git author email for Vercel compatibility
