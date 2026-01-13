@@ -1,5 +1,4 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import './CustomSidebar.css';
 import manifest from '../../../../manifest.json';
 
@@ -59,27 +58,13 @@ const iconMap: Record<string, JSX.Element> = {
 function CustomSidebar({ items, isCollapsed = false }: CustomSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // Detect dark mode
-  useEffect(() => {
-    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDarkMode(darkModeQuery.matches);
-
-    const handleChange = (e: MediaQueryListEvent) => {
-      setIsDarkMode(e.matches);
-    };
-
-    darkModeQuery.addEventListener('change', handleChange);
-    return () => darkModeQuery.removeEventListener('change', handleChange);
-  }, []);
 
   const handleClick = (path: string) => {
     navigate(path);
   };
 
-  const logoSrc = isDarkMode ? '/logo_white.svg' : '/logo.svg';
-  const iconSrc = isDarkMode ? '/icon_white.png' : `/${manifest.icon.replace('images/', '')}`;
+  const logoSrc = '/logo.svg';
+  const iconSrc = `/${manifest.icon.replace('images/', '')}`;
 
   return (
     <nav className={`custom-sidebar ${isCollapsed ? 'collapsed' : ''}`}>

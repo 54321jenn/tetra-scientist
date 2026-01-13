@@ -35,8 +35,6 @@
     "storybook": "8.6.14",
     "@storybook/*": "8.6.14"
   },
-  "dependencies": {
-  },
   "optionalDependencies": {
     "@esbuild/darwin-arm64": "^0.27.2"
   }
