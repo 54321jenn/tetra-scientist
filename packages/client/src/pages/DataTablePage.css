@@ -1,0 +1,13 @@
+.data-table-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.5rem;
+  background-color: var(--bg-primary);
+}
+
+.data-table-content {
+  flex: 1;
+  overflow: auto;
+}
+

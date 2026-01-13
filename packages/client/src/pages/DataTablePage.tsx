@@ -1,3 +1,6 @@
+import CustomTable, { TableColumn } from '../components/CustomTable';
+import './DataTablePage.css';
+
 interface SampleData {
   id: number;
   name: string;
@@ -16,33 +19,22 @@ const sampleData: SampleData[] = [
 ];
 
 function DataTablePage() {
+  // Define table columns
+  const columns: TableColumn<SampleData>[] = [
+    { key: 'id', header: 'ID', width: '80px' },
+    { key: 'name', header: 'Name' },
+    { key: 'email', header: 'Email' },
+    { key: 'status', header: 'Status', width: '120px' },
+    { key: 'date', header: 'Date', width: '150px' },
+  ];
+
   return (
-    <div className="app-container">
-      <div className="demo-grid">
-        <div style={{ gridColumn: '1 / -1' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #ddd' }}>
-                <th style={{ padding: '12px', textAlign: 'left', width: '80px' }}>ID</th>
-                <th style={{ padding: '12px', textAlign: 'left', width: '200px' }}>Name</th>
-                <th style={{ padding: '12px', textAlign: 'left', width: '250px' }}>Email</th>
-                <th style={{ padding: '12px', textAlign: 'left', width: '120px' }}>Status</th>
-                <th style={{ padding: '12px', textAlign: 'left', width: '150px' }}>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sampleData.map((row) => (
-                <tr key={row.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '12px' }}>{row.id}</td>
-                  <td style={{ padding: '12px' }}>{row.name}</td>
-                  <td style={{ padding: '12px' }}>{row.email}</td>
-                  <td style={{ padding: '12px' }}>{row.status}</td>
-                  <td style={{ padding: '12px' }}>{row.date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+    <div className="data-table-page">
+      <div className="data-table-content">
+        <CustomTable
+          data={sampleData}
+          columns={columns}
+        />
       </div>
     </div>
   );
