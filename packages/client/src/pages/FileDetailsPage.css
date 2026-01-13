@@ -3,6 +3,34 @@
   min-height: 100vh;
 }
 
+.back-button-container {
+  padding: 1rem 2rem 0 2rem;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.back-button:hover {
+  color: var(--text-primary);
+  background-color: var(--hover-bg);
+}
+
+.back-button svg {
+  flex-shrink: 0;
+}
+
 .file-details-content {
   display: flex;
   position: relative;

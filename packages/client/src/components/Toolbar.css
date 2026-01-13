@@ -280,6 +280,10 @@
   .toolbar-content {
     padding: 0.875rem 1.5rem;
   }
+
+  .toolbar-title {
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {

@@ -8,10 +8,11 @@ const BackIcon = () => (
   </svg>
 );
 
-const EyeIcon = () => (
+const OpenIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+    <polyline points="15 3 21 3 21 9"></polyline>
+    <line x1="10" y1="14" x2="21" y2="3"></line>
   </svg>
 );
 
@@ -96,6 +97,12 @@ function FileDetailsPage() {
 
   return (
     <div className="file-details-page">
+      <div className="back-button-container">
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <BackIcon />
+          <span>Back</span>
+        </button>
+      </div>
       <div className="file-details-content">
         <div className="file-details-main">
           <div className="file-details-left">
@@ -184,8 +191,8 @@ function FileDetailsPage() {
                 <h3>Preview</h3>
                 <div className="preview-actions">
                   <button className="preview-action-btn">
-                    <EyeIcon />
-                    <span>View</span>
+                    <OpenIcon />
+                    <span>Open</span>
                   </button>
                   <button className="preview-action-btn">
                     <BookmarkIcon />

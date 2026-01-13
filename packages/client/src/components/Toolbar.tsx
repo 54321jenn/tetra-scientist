@@ -9,7 +9,6 @@ const pageTitles: Record<string, string> = {
   '/search-results': 'Search Results',
   '/file-details': 'File Details',
   '/apps': 'Apps',
-  '/contributing': 'Contributing',
 };
 
 interface ToolbarProps {

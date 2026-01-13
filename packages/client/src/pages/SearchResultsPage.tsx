@@ -1,3 +1,4 @@
+import CustomTable, { TableColumn } from '../components/CustomTable';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import './SearchResultsPage.css';
@@ -179,11 +180,75 @@ const MoreIcon = () => (
   </svg>
 );
 
+const BookmarkIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+  </svg>
+);
+
+const PreviewIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+    <circle cx="12" cy="12" r="3"></circle>
+  </svg>
+);
+
+const ShareIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="18" cy="5" r="3"></circle>
+    <circle cx="6" cy="12" r="3"></circle>
+    <circle cx="18" cy="19" r="3"></circle>
+    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+  </svg>
+);
+
+const LineageIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="18" cy="18" r="3"></circle>
+    <circle cx="6" cy="6" r="3"></circle>
+    <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+    <line x1="6" y1="9" x2="6" y2="21"></line>
+  </svg>
+);
+
+const PlaceholderIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <line x1="12" y1="8" x2="12" y2="12"></line>
+    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+  </svg>
+);
+
+const CopyIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
+
 function SearchResultsPage() {
   const navigate = useNavigate();
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [bulkMenuOpen, setBulkMenuOpen] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleSelectAll = () => {
     if (selectAll) {
@@ -209,32 +274,36 @@ function SearchResultsPage() {
 
   const hasSelection = selectedRows.size > 0;
 
-  // Add click handlers to table rows
+  const handleCopy = async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  // Close menu when clicking outside
   useEffect(() => {
-    if (!tableRef.current) return;
-
-    const handleRowClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const row = target.closest('tbody tr');
-
-      if (!row) return;
-
-      // Don't trigger if clicking on checkbox
-      if (target.closest('input[type="checkbox"]')) return;
-
-      const rowIndex = Array.from(row.parentElement!.children).indexOf(row);
-      if (rowIndex >= 0 && rowIndex < searchResults.length) {
-        handleRowSelect(searchResults[rowIndex].id);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (openMenuId && !(e.target as HTMLElement).closest('.action-menu-wrapper')) {
+        setOpenMenuId(null);
+      }
+      if (bulkMenuOpen && !(e.target as HTMLElement).closest('.bulk-menu-wrapper')) {
+        setBulkMenuOpen(false);
+      }
+      if (showInfo && !(e.target as HTMLElement).closest('.info-sidebar')) {
+        // Check if the click is not on the About button that opens the sidebar
+        if (!(e.target as HTMLElement).closest('[aria-label="About"]')) {
+          setShowInfo(false);
+        }
       }
     };
 
-    const tableElement = tableRef.current;
-    tableElement.addEventListener('click', handleRowClick);
-
-    return () => {
-      tableElement.removeEventListener('click', handleRowClick);
-    };
-  }, [selectedRows]); // Re-attach when selection changes
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openMenuId, bulkMenuOpen, showInfo]);
 
   // Add checkbox column to data
   const dataWithCheckbox = searchResults.map(row => ({
@@ -249,6 +318,8 @@ function SearchResultsPage() {
         }}
         onClick={(e) => e.stopPropagation()}
         className="row-checkbox"
+        aria-label={`Select ${row.name}`}
+        title={`Select ${row.name}`}
       />
     ),
     nameWithIcon: (
@@ -263,7 +334,121 @@ function SearchResultsPage() {
         <div className="uploaded-relative">{row.uploadedAtRelative}</div>
       </div>
     ),
+    actions: (
+      <div className="actions-cell">
+        <button
+          className="action-icon-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate('/file-details');
+          }}
+          aria-label="Preview"
+          title="Preview"
+        >
+          <PreviewIcon />
+        </button>
+        <button
+          className="action-icon-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowInfo(true);
+          }}
+          aria-label="About"
+          title="About"
+        >
+          <InfoIcon />
+        </button>
+        <div className="action-menu-wrapper">
+          <button
+            className="action-icon-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenMenuId(openMenuId === row.id ? null : row.id);
+            }}
+            aria-label="More actions"
+            title="More actions"
+          >
+            <MoreIcon />
+          </button>
+          {openMenuId === row.id && (
+            <div className="action-menu">
+              <button
+                className="action-menu-item"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('Bookmark', row.name);
+                  setOpenMenuId(null);
+                }}
+              >
+                <BookmarkIcon />
+                <span>Bookmark</span>
+              </button>
+              <button
+                className="action-menu-item"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('Download', row.name);
+                  setOpenMenuId(null);
+                }}
+              >
+                <DownloadIcon />
+                <span>Download</span>
+              </button>
+              <button
+                className="action-menu-item"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('Share', row.name);
+                  setOpenMenuId(null);
+                }}
+              >
+                <ShareIcon />
+                <span>Share</span>
+              </button>
+              <button
+                className="action-menu-item"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('Lineage', row.name);
+                  setOpenMenuId(null);
+                }}
+              >
+                <LineageIcon />
+                <span>Lineage</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    ),
   }));
+
+  // Define table columns
+  const columns: TableColumn<typeof dataWithCheckbox[0]>[] = [
+    {
+      key: 'checkbox',
+      header: (
+        <input
+          type="checkbox"
+          checked={selectAll}
+          onChange={handleSelectAll}
+          className="row-checkbox"
+          aria-label="Select all rows"
+          title="Select all rows"
+        />
+      ),
+      width: '50px'
+    },
+    { key: 'nameWithIcon', header: 'Name' },
+    { key: 'sourceLocation', header: 'Source Location' },
+    { key: 'uploadedAtFormatted', header: 'Uploaded At' },
+    { key: 'actions', header: 'Actions', width: '120px' },
+  ];
+
+  // Handle row click to select the row
+  const handleRowClick = (row: typeof dataWithCheckbox[0]) => {
+    handleRowSelect(row.id);
+  };
 
   return (
     <div className="search-results-page">
@@ -276,10 +461,10 @@ function SearchResultsPage() {
             className="search-input"
             defaultValue="All data for proteomics study 3"
           />
-          <button className="search-icon-btn" aria-label="Search">
+          <button className="search-icon-btn" aria-label="Search" title="Search">
             <SearchIcon />
           </button>
-          <button className="search-icon-btn" aria-label="Filter">
+          <button className="search-icon-btn" aria-label="Filter" title="Filter">
             <FilterIcon />
           </button>
         </div>
@@ -287,10 +472,6 @@ function SearchResultsPage() {
 
       <div className="action-bar">
         <div className="action-bar-left">
-          <button className="action-btn" onClick={handleSelectAll}>
-            <EditIcon />
-            <span>{selectAll ? 'Deselect All' : 'Select All'}</span>
-          </button>
           <button className="action-btn">
             <StarIcon />
             <span>Save Search</span>
@@ -298,50 +479,142 @@ function SearchResultsPage() {
         </div>
         <div className="action-bar-right">
           <button className="action-btn" disabled={!hasSelection}>
-            <InfoIcon />
-            <span>About</span>
+            <BookmarkIcon />
+            <span>Bookmark</span>
           </button>
-          <button
-            className="action-btn"
-            disabled={!hasSelection}
-            onClick={() => hasSelection && navigate('/file-details')}
-          >
-            <CalendarIcon />
-            <span>View</span>
+          <button className="action-btn" disabled={!hasSelection}>
+            <ShareIcon />
+            <span>Share</span>
           </button>
           <button className="action-btn" disabled={!hasSelection}>
             <DownloadIcon />
             <span>Download</span>
           </button>
-          <button className="action-btn" disabled={!hasSelection}>
-            <MoreIcon />
-            <span>More</span>
-          </button>
+          <div className="bulk-menu-wrapper">
+            <button
+              className="action-btn"
+              disabled={!hasSelection}
+              onClick={() => hasSelection && setBulkMenuOpen(!bulkMenuOpen)}
+            >
+              <MoreIcon />
+              <span>More</span>
+            </button>
+            {bulkMenuOpen && hasSelection && (
+              <div className="bulk-action-menu">
+                <button
+                  className="action-menu-item"
+                  onClick={() => {
+                    console.log('Placeholder action');
+                    setBulkMenuOpen(false);
+                  }}
+                >
+                  <PlaceholderIcon />
+                  <span>Placeholder</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="search-results-content" ref={tableRef}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #ddd' }}>
-              <th style={{ padding: '12px', textAlign: 'left', width: '50px' }}></th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Name</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Source Location</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Uploaded At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dataWithCheckbox.map((row) => (
-              <tr key={row.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '12px' }}>{row.checkbox}</td>
-                <td style={{ padding: '12px' }}>{row.nameWithIcon}</td>
-                <td style={{ padding: '12px' }}>{row.sourceLocation}</td>
-                <td style={{ padding: '12px' }}>{row.uploadedAtFormatted}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <CustomTable
+          data={dataWithCheckbox}
+          columns={columns}
+          onRowClick={handleRowClick}
+        />
       </div>
+
+      {/* Info Sidebar */}
+      {showInfo && (
+        <div className="info-sidebar">
+          <div className="info-sidebar-header">
+            <h3>Information</h3>
+            <button className="close-sidebar-btn" onClick={() => setShowInfo(false)}>
+              <CloseIcon />
+            </button>
+          </div>
+          <div className="info-sidebar-content">
+            <div className="info-sidebar-section">
+              <h4>Attributes</h4>
+              <div className="info-sidebar-item">
+                <div className="info-sidebar-value">Proteomics Study 3</div>
+                <div className="info-sidebar-label">Study Name</div>
+                <button className="copy-btn-sidebar" onClick={() => handleCopy('Proteomics Study 3', 'sidebar-study-name')}>
+                  {copiedId === 'sidebar-study-name' ? <CheckIcon /> : <CopyIcon />}
+                </button>
+              </div>
+              <div className="info-sidebar-item">
+                <div className="info-sidebar-value">Protocol</div>
+                <div className="info-sidebar-label">Document Type</div>
+                <button className="copy-btn-sidebar" onClick={() => handleCopy('Protocol', 'sidebar-doc-type')}>
+                  {copiedId === 'sidebar-doc-type' ? <CheckIcon /> : <CopyIcon />}
+                </button>
+              </div>
+              <div className="info-sidebar-item">
+                <div className="info-sidebar-value">Dr. Sarah Chen</div>
+                <div className="info-sidebar-label">Principal Investigator</div>
+                <button className="copy-btn-sidebar" onClick={() => handleCopy('Dr. Sarah Chen', 'sidebar-pi')}>
+                  {copiedId === 'sidebar-pi' ? <CheckIcon /> : <CopyIcon />}
+                </button>
+              </div>
+            </div>
+
+            <div className="info-sidebar-section">
+              <h4>Information</h4>
+              <div className="info-sidebar-item">
+                <div className="info-sidebar-value">Proteomics-Study3-Protocol.txt</div>
+                <div className="info-sidebar-label">File Name</div>
+                <button className="copy-btn-sidebar" onClick={() => handleCopy('Proteomics-Study3-Protocol.txt', 'sidebar-file-name')}>
+                  {copiedId === 'sidebar-file-name' ? <CheckIcon /> : <CopyIcon />}
+                </button>
+              </div>
+              <div className="info-sidebar-item">
+                <div className="info-sidebar-value">file-ps3-001</div>
+                <div className="info-sidebar-label">File ID</div>
+                <button className="copy-btn-sidebar" onClick={() => handleCopy('file-ps3-001', 'sidebar-file-id')}>
+                  {copiedId === 'sidebar-file-id' ? <CheckIcon /> : <CopyIcon />}
+                </button>
+              </div>
+              <div className="info-sidebar-item">
+                <div className="info-sidebar-value">/tetrasphere/proteomics/study-3/docs</div>
+                <div className="info-sidebar-label">File Path</div>
+                <button className="copy-btn-sidebar" onClick={() => handleCopy('/tetrasphere/proteomics/study-3/docs', 'sidebar-file-path')}>
+                  {copiedId === 'sidebar-file-path' ? <CheckIcon /> : <CopyIcon />}
+                </button>
+              </div>
+              <div className="info-sidebar-item">
+                <div className="info-sidebar-value">/tetrasphere/proteomics/study-3/docs</div>
+                <div className="info-sidebar-label">Source Location</div>
+                <button className="copy-btn-sidebar" onClick={() => handleCopy('/tetrasphere/proteomics/study-3/docs', 'sidebar-source-location')}>
+                  {copiedId === 'sidebar-source-location' ? <CheckIcon /> : <CopyIcon />}
+                </button>
+              </div>
+              <div className="info-sidebar-item">
+                <div className="info-sidebar-value">01/09/2026, 04:30:00 PM EST</div>
+                <div className="info-sidebar-label">Upload date</div>
+                <button className="copy-btn-sidebar" onClick={() => handleCopy('01/09/2026, 04:30:00 PM EST', 'sidebar-upload-date')}>
+                  {copiedId === 'sidebar-upload-date' ? <CheckIcon /> : <CopyIcon />}
+                </button>
+              </div>
+              <div className="info-sidebar-item">
+                <div className="info-sidebar-value">Text Document</div>
+                <div className="info-sidebar-label">Source Type</div>
+                <button className="copy-btn-sidebar" onClick={() => handleCopy('Text Document', 'sidebar-source-type')}>
+                  {copiedId === 'sidebar-source-type' ? <CheckIcon /> : <CopyIcon />}
+                </button>
+              </div>
+              <div className="info-sidebar-item">
+                <div className="info-sidebar-value">18.5 KB</div>
+                <div className="info-sidebar-label">Size</div>
+                <button className="copy-btn-sidebar" onClick={() => handleCopy('18.5 KB', 'sidebar-size')}>
+                  {copiedId === 'sidebar-size' ? <CheckIcon /> : <CopyIcon />}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

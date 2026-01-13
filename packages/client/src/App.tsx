@@ -7,7 +7,6 @@ import SearchPage from './pages/SearchPage';
 import SearchResultsPage from './pages/SearchResultsPage';
 import FileDetailsPage from './pages/FileDetailsPage';
 import AppsPage from './pages/AppsPage';
-import ContributingPage from './pages/ContributingPage';
 
 function App() {
   return (
@@ -20,7 +19,6 @@ function App() {
           <Route path="search-results" element={<SearchResultsPage />} />
           <Route path="file-details" element={<FileDetailsPage />} />
           <Route path="apps" element={<AppsPage />} />
-          <Route path="contributing" element={<ContributingPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
