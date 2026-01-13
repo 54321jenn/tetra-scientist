@@ -80,17 +80,28 @@ button:focus-visible {
     --hover-bg: #3d4856;
   }
 
-  /* Override TetraScience Card component for dark mode */
-  [class*="Card"] {
-    background-color: var(--card-bg) !important;
-    color: var(--text-primary) !important;
-    border-color: var(--border-color) !important;
+  /* Card component styling */
+  .card {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
   }
 
-  /* Override Table component for dark mode */
-  [class*="Table"] {
-    background-color: var(--card-bg) !important;
-    color: var(--text-primary) !important;
+  /* Table styling */
+  table {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+  }
+  
+  table th {
+    background-color: var(--hover-bg);
+    font-weight: 600;
+  }
+  
+  table tr:hover {
+    background-color: var(--hover-bg);
   }
 
   [class*="Table"] th {

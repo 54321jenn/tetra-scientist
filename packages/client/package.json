@@ -1,5 +1,5 @@
 {
-  "name": "@ts-tdp-sci-ux/client",
+  "name": "@ts-design-patterns/client",
   "description": "Tetra Scientist Experience",
   "private": true,
   "version": "0.1.0",
@@ -17,7 +17,6 @@
     "node": ">=20.0.0 <21.0.0"
   },
   "dependencies": {
-    "@tetrascience-npm/tetrascience-react-ui": "^0.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-markdown": "^10.1.0",

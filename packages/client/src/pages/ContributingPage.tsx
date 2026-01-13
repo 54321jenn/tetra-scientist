@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Card } from '@tetrascience-npm/tetrascience-react-ui';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import CodeBlock from '../components/CodeBlock';
 import './ContributingPage.css';
+
+// Simple Card component replacement
+const Card = ({ className, children }: { className?: string; children: React.ReactNode }) => (
+  <div className={`card ${className || ''}`}>{children}</div>
+);
 
 function ContributingPage() {
   const [markdown, setMarkdown] = useState('');
