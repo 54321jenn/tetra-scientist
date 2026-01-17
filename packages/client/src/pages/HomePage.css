@@ -71,7 +71,6 @@
   border: 1px solid var(--border-color) !important;
 }
 
-/* Override Card component background in dark mode */
 .section-card > div {
   border-radius: 8px !important;
 }
@@ -106,6 +105,11 @@
 
 .list-item:hover {
   background-color: var(--hover-bg);
+}
+
+.list-item-link {
+  text-decoration: none;
+  color: inherit;
 }
 
 .card-icon {

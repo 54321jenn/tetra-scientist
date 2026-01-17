@@ -7,7 +7,6 @@ const pageTitles: Record<string, string> = {
   '/data-table': 'My Data',
   '/search': 'Search',
   '/search-results': 'Search Results',
-  '/file-details': 'File Details',
   '/apps': 'Apps',
 };
 
@@ -18,7 +17,18 @@ interface ToolbarProps {
 
 function Toolbar({ isSidebarCollapsed, onToggleSidebar }: ToolbarProps) {
   const location = useLocation();
-  const title = pageTitles[location.pathname] || 'Page';
+
+  // Get the page title, checking for dynamic routes
+  let title = pageTitles[location.pathname];
+  if (!title) {
+    // Check if it's a details page
+    if (location.pathname.startsWith('/details/')) {
+      title = 'Details';
+    } else {
+      title = 'Page';
+    }
+  }
+
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

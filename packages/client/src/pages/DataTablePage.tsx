@@ -1,5 +1,4 @@
 import CustomTable, { TableColumn } from '../components/CustomTable';
-import './DataTablePage.css';
 
 interface SampleData {
   id: number;
@@ -18,23 +17,22 @@ const sampleData: SampleData[] = [
   { id: 5, name: 'Eve Davis', email: 'eve@example.com', status: 'Pending', date: '2024-01-19' },
 ];
 
-function DataTablePage() {
-  // Define table columns
-  const columns: TableColumn<SampleData>[] = [
-    { key: 'id', header: 'ID', width: '80px' },
-    { key: 'name', header: 'Name' },
-    { key: 'email', header: 'Email' },
-    { key: 'status', header: 'Status', width: '120px' },
-    { key: 'date', header: 'Date', width: '150px' },
-  ];
+// Define table columns
+const columns: TableColumn<SampleData>[] = [
+  { key: 'id', header: 'ID', width: '80px' },
+  { key: 'name', header: 'Name', width: '200px' },
+  { key: 'email', header: 'Email', width: '250px' },
+  { key: 'status', header: 'Status', width: '120px' },
+  { key: 'date', header: 'Date', width: '150px' },
+];
 
+function DataTablePage() {
   return (
-    <div className="data-table-page">
-      <div className="data-table-content">
-        <CustomTable
-          data={sampleData}
-          columns={columns}
-        />
+    <div className="app-container">
+      <div className="demo-grid">
+        <div style={{ gridColumn: '1 / -1' }}>
+          <CustomTable data={sampleData} columns={columns} />
+        </div>
       </div>
     </div>
   );

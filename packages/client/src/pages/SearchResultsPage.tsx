@@ -1,6 +1,7 @@
 import CustomTable, { TableColumn } from '../components/CustomTable';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
+import FilterCard from '../components/FilterCard';
 import './SearchResultsPage.css';
 
 interface SearchResult {
@@ -136,6 +137,16 @@ const FilterIcon = () => (
   </svg>
 );
 
+const SparklesIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
+    <path d="M5 3v4"></path>
+    <path d="M19 17v4"></path>
+    <path d="M3 5h4"></path>
+    <path d="M17 19h4"></path>
+  </svg>
+);
+
 const EditIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -249,6 +260,7 @@ function SearchResultsPage() {
   const [bulkMenuOpen, setBulkMenuOpen] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showFilterView, setShowFilterView] = useState(false);
 
   const handleSelectAll = () => {
     if (selectAll) {
@@ -340,7 +352,7 @@ function SearchResultsPage() {
           className="action-icon-btn"
           onClick={(e) => {
             e.stopPropagation();
-            navigate('/file-details');
+            navigate(`/details/${row.id}`);
           }}
           aria-label="Preview"
           title="Preview"
@@ -445,9 +457,9 @@ function SearchResultsPage() {
     { key: 'actions', header: 'Actions', width: '120px' },
   ];
 
-  // Handle row click to select the row
+  // Handle row click to navigate to details page
   const handleRowClick = (row: typeof dataWithCheckbox[0]) => {
-    handleRowSelect(row.id);
+    navigate(`/details/${row.id}`);
   };
 
   return (
@@ -461,11 +473,17 @@ function SearchResultsPage() {
             className="search-input"
             defaultValue="All data for proteomics study 3"
           />
-          <button className="search-icon-btn" aria-label="Search" title="Search">
-            <SearchIcon />
-          </button>
-          <button className="search-icon-btn" aria-label="Filter" title="Filter">
+          <button
+            className={`search-filter-btn ${showFilterView ? 'active' : ''}`}
+            onClick={() => setShowFilterView(!showFilterView)}
+            aria-label="Filter"
+          >
             <FilterIcon />
+            <span>Filters</span>
+          </button>
+          <button className="search-ai-btn" aria-label="AI Mode">
+            <SparklesIcon />
+            <span>AI Assistant</span>
           </button>
         </div>
       </div>
@@ -516,6 +534,15 @@ function SearchResultsPage() {
           </div>
         </div>
       </div>
+
+      {showFilterView && (
+        <div className="search-filter-view">
+          <FilterCard
+            onClose={() => setShowFilterView(false)}
+            onSearch={() => setShowFilterView(false)}
+          />
+        </div>
+      )}
 
       <div className="search-results-content" ref={tableRef}>
         <CustomTable

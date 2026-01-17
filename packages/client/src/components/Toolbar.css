@@ -290,5 +290,9 @@
   .toolbar-content {
     padding: 0.75rem 1rem;
   }
+
+  .toolbar-title {
+    display: none;
+  }
 }
 

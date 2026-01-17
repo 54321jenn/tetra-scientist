@@ -1,10 +1,6 @@
+import CustomCard from '../components/CustomCard';
 import { Link } from 'react-router-dom';
 import './HomePage.css';
-
-// Simple Card component replacement
-const Card = ({ className, children }: { className?: string; children: React.ReactNode }) => (
-  <div className={`card ${className || ''}`}>{children}</div>
-);
 
 // Icon components
 const StarIcon = () => (
@@ -48,6 +44,7 @@ interface CardItem {
   icon: JSX.Element;
   title: string;
   subtitle: string;
+  link?: string;
 }
 
 function HomePage() {
@@ -74,16 +71,19 @@ function HomePage() {
       icon: <SearchIcon />,
       title: 'All data for proteomics study 3',
       subtitle: 'This morning',
+      link: '/search-results',
     },
     {
       icon: <SearchIcon />,
       title: 'Mass spec data for Sample#97',
       subtitle: '3 months',
+      link: '/search-results',
     },
     {
       icon: <SearchIcon />,
       title: 'All my data',
       subtitle: 'Last month',
+      link: '/search-results',
     },
   ];
 
@@ -92,16 +92,19 @@ function HomePage() {
       icon: <GridIcon />,
       title: 'Data set',
       subtitle: 'Today',
+      link: '/details/1',
     },
     {
       icon: <FileIcon />,
       title: 'File name',
       subtitle: 'Yesterday',
+      link: '/details/2',
     },
     {
       icon: <ExcelIcon />,
       title: 'Excel file name',
       subtitle: 'Yesterday',
+      link: '/details/3',
     },
   ];
 
@@ -110,22 +113,34 @@ function HomePage() {
       <div className="section-header">
         <h3>{title}</h3>
       </div>
-      <Card className="section-card">
+      <CustomCard className="section-card">
         <div className="section-card-content">
-          {items.map((item, index) => (
-            <div key={index} className="list-item">
-              <div className="card-icon">{item.icon}</div>
-              <div className="card-text">
-                <div className="card-title">{item.title}</div>
-                <div className="card-subtitle">{item.subtitle}</div>
+          {items.map((item, index) => {
+            const content = (
+              <>
+                <div className="card-icon">{item.icon}</div>
+                <div className="card-text">
+                  <div className="card-title">{item.title}</div>
+                  <div className="card-subtitle">{item.subtitle}</div>
+                </div>
+                <button className="card-menu-btn" aria-label="More options">
+                  <MoreIcon />
+                </button>
+              </>
+            );
+
+            return item.link ? (
+              <Link key={index} to={item.link} className="list-item list-item-link">
+                {content}
+              </Link>
+            ) : (
+              <div key={index} className="list-item">
+                {content}
               </div>
-              <button className="card-menu-btn" aria-label="More options">
-                <MoreIcon />
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
-      </Card>
+      </CustomCard>
       <Link to={viewAllLink} className="view-all-link">View All</Link>
     </div>
   );

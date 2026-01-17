@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import FilterCard from '../components/FilterCard';
 import './SearchPage.css';
 
 // Icon components
@@ -39,6 +41,7 @@ interface SearchItem {
 
 function SearchPage() {
   const navigate = useNavigate();
+  const [showFilterView, setShowFilterView] = useState(false);
 
   const savedSearches: SearchItem[] = [
     {
@@ -88,9 +91,13 @@ function SearchPage() {
             placeholder="Search"
             className="search-input"
           />
-          <button className="search-filter-btn" aria-label="Filter">
+          <button
+            className={`search-filter-btn ${showFilterView ? 'active' : ''}`}
+            onClick={() => setShowFilterView(!showFilterView)}
+            aria-label="Filter"
+          >
             <FilterIcon />
-            <span>Filter</span>
+            <span>Filters</span>
           </button>
           <button className="search-ai-btn" aria-label="AI Mode">
             <SparklesIcon />
@@ -98,6 +105,18 @@ function SearchPage() {
           </button>
         </div>
       </div>
+
+      {showFilterView && (
+        <div className="search-filter-view">
+          <FilterCard
+            onClose={() => setShowFilterView(false)}
+            onSearch={() => {
+              setShowFilterView(false);
+              navigate('/search-results');
+            }}
+          />
+        </div>
+      )}
 
       <div className="search-sections">
         <div className="search-section">
@@ -127,7 +146,12 @@ function SearchPage() {
           <h3 className="search-section-title">Recent Searches</h3>
           <div className="search-list">
             {recentSearches.map((item, index) => (
-              <div key={index} className="search-list-item">
+              <div
+                key={index}
+                className="search-list-item"
+                onClick={() => navigate('/search-results')}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="search-item-icon">{item.icon}</div>
                 <div className="search-item-text">
                   <div className="search-item-title">{item.title}</div>

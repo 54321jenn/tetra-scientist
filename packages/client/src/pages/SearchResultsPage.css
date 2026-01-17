@@ -55,6 +55,21 @@
   color: var(--text-primary);
 }
 
+.search-icon-btn.active {
+  background-color: #1976D2;
+  color: white;
+  border-radius: 50%;
+  padding: 0.5rem;
+}
+
+.search-icon-btn.active:hover {
+  background-color: #1565C0;
+}
+
+.search-icon-btn.active svg {
+  color: white !important;
+}
+
 /* Action Bar */
 .action-bar {
   display: flex;
@@ -354,3 +369,7 @@
   z-index: 1000;
 }
 
+/* Filter View */
+.search-filter-view {
+  margin-bottom: 1.5rem;
+}

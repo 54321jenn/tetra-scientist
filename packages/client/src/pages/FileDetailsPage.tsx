@@ -188,7 +188,6 @@ function FileDetailsPage() {
           <div className="file-details-right">
             <div className="preview-section">
               <div className="preview-header">
-                <h3>Preview</h3>
                 <div className="preview-actions">
                   <button className="preview-action-btn">
                     <OpenIcon />

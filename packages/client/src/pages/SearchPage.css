@@ -251,3 +251,24 @@
   }
 }
 
+/* Filter Button Active State */
+.search-filter-btn.active {
+  background-color: #1976D2;
+  color: white;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+}
+
+.search-filter-btn.active:hover {
+  background-color: #1565C0;
+}
+
+.search-filter-btn.active svg {
+  color: white !important;
+}
+
+/* Filter View */
+.search-filter-view {
+  max-width: 800px;
+  margin: 0 auto 2rem auto;
+}

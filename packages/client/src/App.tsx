@@ -17,7 +17,7 @@ function App() {
           <Route path="data-table" element={<DataTablePage />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="search-results" element={<SearchResultsPage />} />
-          <Route path="file-details" element={<FileDetailsPage />} />
+          <Route path="details/:id" element={<FileDetailsPage />} />
           <Route path="apps" element={<AppsPage />} />
         </Route>
       </Routes>
