@@ -3,6 +3,9 @@
 # ignore vitest generated files
 **/__screenshots__/*
 
+# Auth files
+auth.json
+
 # Docker images and tarballs
 *.tar
 image.tar

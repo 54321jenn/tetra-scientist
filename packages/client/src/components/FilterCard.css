@@ -6,6 +6,7 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   position: relative;
   padding: 1.5rem;
+  box-sizing: border-box !important;
 }
 
 .filter-card-top-bar {
@@ -67,11 +68,53 @@
   padding: 0.25rem;
   border-radius: 4px;
   transition: background-color 0.2s ease;
+  position: relative;
 }
 
 .filter-card-modified-icon:hover {
   background-color: #E3F2FD;
   animation: none;
+}
+
+/* Tooltip for save button */
+.filter-card-modified-icon[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #323232;
+  color: white;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease 0.5s;
+}
+
+.filter-card-modified-icon[data-tooltip]::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.125rem;
+  border: 4px solid transparent;
+  border-top-color: #323232;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease 0.5s;
+}
+
+.filter-card-modified-icon[data-tooltip]:hover::after,
+.filter-card-modified-icon[data-tooltip]:hover::before {
+  opacity: 1;
 }
 
 @keyframes pulse {
@@ -695,25 +738,35 @@
 .filter-toast {
   position: fixed;
   bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #323232;
+  left: 2rem;
+  background-color: #1565C0;
   color: white;
   padding: 0.875rem 1.5rem;
   border-radius: 4px;
   font-size: 0.875rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 10000;
-  animation: slideUp 0.3s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
-@keyframes slideUp {
+.filter-toast.fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(1rem);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }

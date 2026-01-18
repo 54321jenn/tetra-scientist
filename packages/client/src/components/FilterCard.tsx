@@ -102,18 +102,28 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
   const [currentFilterName, setCurrentFilterName] = useState<string>('New Filter');
   const [isModified, setIsModified] = useState(false);
   const [savedState, setSavedState] = useState<{order: string[], values: any} | null>(null);
-  const [toast, setToast] = useState<{message: string, visible: boolean}>({message: '', visible: false});
+  const [toast, setToast] = useState<{message: string, visible: boolean, fadeOut: boolean}>({message: '', visible: false, fadeOut: false});
   const loadDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Toast auto-hide
+  // Toast auto-hide with fade-out
   useEffect(() => {
-    if (toast.visible) {
-      const timer = setTimeout(() => {
-        setToast({message: '', visible: false});
+    if (toast.visible && !toast.fadeOut) {
+      // Start fade-out after 2.7 seconds
+      const fadeTimer = setTimeout(() => {
+        setToast(prev => ({...prev, fadeOut: true}));
+      }, 2700);
+
+      // Hide completely after fade-out animation (300ms)
+      const hideTimer = setTimeout(() => {
+        setToast({message: '', visible: false, fadeOut: false});
       }, 3000);
-      return () => clearTimeout(timer);
+
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(hideTimer);
+      };
     }
-  }, [toast.visible]);
+  }, [toast.visible, toast.fadeOut]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -447,7 +457,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
       } else {
         // Different name - check if new name already exists
         if (savedFilters.some(f => f.name === newName)) {
-          setToast({message: 'A filter with this name already exists', visible: true});
+          setToast({message: 'A filter with this name already exists', visible: true, fadeOut: false});
           return;
         }
         // Replace old filter with new name
@@ -459,7 +469,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
     } else {
       // Creating new filter
       if (savedFilters.some(f => f.name === newName)) {
-        setToast({message: 'A filter with this name already exists', visible: true});
+        setToast({message: 'A filter with this name already exists', visible: true, fadeOut: false});
         return;
       }
       updatedFilters = [...savedFilters, filterData];
@@ -493,7 +503,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
 
     setShowSaveModal(false);
     setFilterName('');
-    setToast({message, visible: true});
+    setToast({message, visible: true, fadeOut: false});
   };
 
   const handleDeleteFilter = (filterNameToDelete: string) => {
@@ -522,7 +532,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
     }
 
     setFilterToDelete(null);
-    setToast({message: `"${filterNameToDelete}" deleted`, visible: true});
+    setToast({message: `"${filterNameToDelete}" deleted`, visible: true, fadeOut: false});
   };
 
   const handleUpdateFilter = (filterNameToUpdate: string) => {
@@ -1008,7 +1018,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
             <button
               className="filter-card-modified-icon"
               onClick={handleOpenSaveModal}
-              title={currentFilterName === 'New Filter' ? 'Save filter' : 'Save changes'}
+              data-tooltip={currentFilterName === 'New Filter' ? 'Save filter' : 'Save changes'}
               aria-label={currentFilterName === 'New Filter' ? 'Save filter' : 'Save changes'}
             >
               <SaveIcon />
@@ -1144,7 +1154,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
 
       {/* Toast Notification */}
       {toast.visible && (
-        <div className="filter-toast">
+        <div className={`filter-toast ${toast.fadeOut ? 'fade-out' : ''}`}>
           {toast.message}
         </div>
       )}

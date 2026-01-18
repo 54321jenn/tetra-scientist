@@ -32,8 +32,3 @@ _No data produced_
 ## Changelog
 
 ### v1.1.0
-- Initial deployment setup
-- Fixed platform-specific dependencies for macOS ARM64
-- Configured Vercel deployment for main branch
-- Fixed vercel.json schema validation errors
-- Updated git author email for Vercel compatibility

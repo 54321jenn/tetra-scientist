@@ -115,6 +115,66 @@
   flex-shrink: 0;
 }
 
+/* Responsive: Hide text on smaller screens and show tooltips */
+@media (max-width: 1200px) {
+  .action-btn-text {
+    display: none;
+  }
+
+  .action-btn {
+    padding: 0.5rem;
+    position: relative;
+  }
+
+  /* Tooltip styling for collapsed buttons */
+  .action-btn[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: #323232;
+    color: white;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease 0.5s;
+  }
+
+  /* Tooltip arrow */
+  .action-btn[data-tooltip]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 0.125rem;
+    border: 4px solid transparent;
+    border-top-color: #323232;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease 0.5s;
+  }
+
+  .action-btn[data-tooltip]:hover::after,
+  .action-btn[data-tooltip]:hover::before {
+    opacity: 1;
+  }
+
+  /* Don't show tooltip on disabled buttons */
+  .action-btn:disabled::after,
+  .action-btn:disabled::before {
+    display: none;
+  }
+}
+
 /* Name cell with icon */
 .name-cell {
   display: flex;
@@ -161,6 +221,51 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* Tooltip for action icon buttons */
+.action-icon-btn {
+  position: relative;
+}
+
+.action-icon-btn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #323232;
+  color: white;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease 0.5s;
+}
+
+.action-icon-btn[data-tooltip]::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.125rem;
+  border: 4px solid transparent;
+  border-top-color: #323232;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease 0.5s;
+}
+
+.action-icon-btn[data-tooltip]:hover::after,
+.action-icon-btn[data-tooltip]:hover::before {
+  opacity: 1;
 }
 
 .action-icon-btn {
@@ -377,4 +482,46 @@
 
 .search-filter-view.visible {
   display: block;
+}
+
+.search-filter-view .filter-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Toast Notification */
+.toast-notification {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  background-color: #1565C0;
+  color: white;
+  padding: 0.875rem 1.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.toast-notification.fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }

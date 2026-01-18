@@ -11,7 +11,190 @@ interface SearchResult {
   uploadedAt: string;
   uploadedAtRelative: string;
   fileType: 'document' | 'zip' | 'csv';
+  content?: string;
 }
+
+const protocolContent = `# Proteomics Study 3 - Experimental Protocol
+================================================================================
+PROTEOMICS STUDY 3: COMPARATIVE PROTEIN EXPRESSION ANALYSIS
+================================================================================
+
+STUDY INFORMATION
+-----------
+Study ID: PS3-2026-001
+Principal Investigator: Dr. Sarah Chen
+Lab: Proteomics Research Center
+Institution: TetraScience Molecular Biology Institute
+Protocol Version: 2.1
+Date Created: 01/05/2026
+Last Modified: 01/09/2026
+Status: Active
+
+STUDY OBJECTIVE:
+-----------
+To perform comprehensive proteomic profiling of cancer cell lines treated with
+experimental therapeutic compound TS-3847 compared to vehicle controls. This study
+aims to identify differentially expressed proteins and elucidate the molecular
+mechanisms of action for this novel anti-cancer agent. The proteomics data will
+inform downstream pathway analysis and identify potential biomarkers for clinical
+development.
+
+SAMPLE INFORMATION:
+-----------
+Cell Line: A549 (human lung carcinoma)
+Source: ATCC CCL-185
+Passage Range: P15-P20
+Culture Medium: RPMI-1640 + 10% FBS + 1% Pen/Strep
+Sample Groups:
+  - Group A: Vehicle Control (DMSO 0.1%) - 6 biological replicates
+  - Group B: TS-3847 Treatment (10µM) - 6 biological replicates
+Total Samples: 12
+
+MATERIALS AND REAGENTS:
+-----------
+Reagents:
+  - TS-3847 compound (10mM stock in DMSO)
+  - DMSO (molecular biology grade)
+  - RIPA lysis buffer
+  - Protease inhibitor cocktail
+  - Phosphatase inhibitor cocktail
+  - BCA protein assay kit
+  - DTT (dithiothreitol)
+  - Iodoacetamide
+  - Trypsin (sequencing grade)
+  - TMT 6-plex labeling reagents
+  - Acetonitrile (HPLC grade)
+  - Formic acid (LC-MS grade)
+  - Water (LC-MS grade)
+
+Equipment:
+  - Orbitrap Fusion Lumos mass spectrometer
+  - EASY-nLC 1200 UHPLC system
+  - C18 analytical column (75µm x 50cm, 2µm particles)
+  - Centrifuge (refrigerated)
+  - SpeedVac concentrator (Thermo Savant)
+  - pH meter
+  - Vortex mixer
+  - -80°C freezer
+
+EXPERIMENTAL PROCEDURE:
+-----------
+
+Day 1 - Cell Culture and Treatment:
+1. Seed A549 cells at 2x10^6 cells per 10cm dish
+2. Culture overnight in RPMI-1640 + 10% FBS at 37°C, 5% CO2
+3. Verify cell confluency reaches 70-80%
+4. Prepare treatment solutions:
+   - Vehicle control: DMSO diluted to 0.1% in culture medium
+   - TS-3847 treatment: 10µM final concentration in culture medium
+5. Replace medium with treatment solutions (10mL per dish)
+6. Incubate for 48 hours
+
+Day 3 - Cell Harvest and Lysis:
+1. Remove culture medium and wash cells 3x with ice-cold PBS
+2. Add 500µL RIPA buffer + protease/phosphatase inhibitors per dish
+3. Scrape cells and transfer to pre-chilled 1.5mL tubes
+4. Incubate on ice for 30 minutes with vortexing every 10 min
+5. Centrifuge at 14,000 x g for 15 min at 4°C
+6. Transfer supernatant to fresh tubes, discard pellet
+7. Measure protein concentration using BCA assay
+8. Normalize all samples to 2 mg/mL
+9. Aliquot 100µg protein per sample, store at -80°C
+
+Day 4 - Protein Digestion:
+1. Thaw protein samples on ice
+2. Reduce disulfide bonds with 5mM DTT at 56°C for 30 min
+3. Alkylate cysteines with 15mM iodoacetamide at RT for 30 min in dark
+4. Quench with additional DTT to 10mM final concentration
+5. Add trypsin at 1:50 enzyme:protein ratio
+6. Digest overnight at 37°C with gentle shaking
+7. Acidify with formic acid to pH 3
+8. Desalt peptides using C18 spin columns
+9. Dry peptides in SpeedVac
+
+Day 5 - TMT Labeling:
+1. Reconstitute peptides in 100mM TEAB buffer
+2. Add TMT reagents according to manufacturer protocol
+3. Incubate at RT for 1 hour
+4. Quench reaction with hydroxylamine
+5. Combine all labeled samples
+6. Desalt combined sample
+7. Dry and store at -80°C until LC-MS/MS analysis
+
+Day 6-7 - LC-MS/MS Analysis:
+1. Reconstitute peptides in 0.1% formic acid
+2. Load 1µg peptides onto C18 analytical column
+3. LC gradient (180 min):
+   - 0-10 min: 3% B
+   - 10-160 min: 3-40% B
+   - 160-165 min: 40-80% B
+   - 165-170 min: 80% B
+   - 170-180 min: 3% B (re-equilibration)
+   Mobile phase A: 0.1% formic acid in water
+   Mobile phase B: 0.1% formic acid in 80% acetonitrile
+4. MS parameters (Orbitrap Fusion Lumos):
+   - MS1 scan: 120,000 resolution, 400-1600 m/z, AGC 4e5, 50ms max IT
+   - MS2 scan: CID fragmentation, 35% collision energy
+   - MS3 scan: HCD fragmentation for TMT quantification
+   - Top speed mode with 3 second cycle time
+
+DATA ANALYSIS:
+-----------
+1. Raw data processing with Proteome Discoverer 2.5
+2. Database search against UniProt human proteome (reviewed entries)
+3. Search parameters:
+   - Enzyme: Trypsin, max 2 missed cleavages
+   - Fixed modifications: Carbamidomethyl (C), TMT6plex (N-term, K)
+   - Variable modifications: Oxidation (M), Acetyl (Protein N-term)
+   - Precursor mass tolerance: 10 ppm
+   - Fragment mass tolerance: 0.6 Da
+   - FDR: 1% at peptide and protein level
+4. Statistical analysis in Perseus software
+5. Pathway enrichment analysis using DAVID and STRING
+
+EXPECTED DELIVERABLES:
+-----------
+1. Raw MS data files (.raw format) - 12 files
+2. Processed peptide identification files (.msf)
+3. Protein quantification matrix (Excel)
+4. Quality control report (PDF)
+5. Differential expression analysis results
+6. Pathway enrichment analysis results
+7. Final study report with figures
+
+DATA STORAGE:
+-----------
+Raw data: /tetrasphere/proteomics/study-3/samples/
+Processed data: /tetrasphere/proteomics/study-3/processed/
+Analysis results: /tetrasphere/proteomics/study-3/analysis/
+Documentation: /tetrasphere/proteomics/study-3/docs/
+
+TIMELINE:
+-----------
+Sample preparation: 01/06/2026 - 01/08/2026
+MS data acquisition: 01/10/2026 - 01/12/2026
+Data analysis: 01/13/2026 - 01/20/2026
+Report generation: 01/21/2026 - 01/25/2026
+
+NOTES:
+-----------
+- Maintain sterile technique throughout cell culture procedures
+- Keep all samples on ice during processing
+- Use fresh protease/phosphatase inhibitors
+- Verify TMT labeling efficiency before combining samples
+- Run quality control samples between batches
+- Back up all raw data files immediately after acquisition
+
+CONTACT INFORMATION:
+-----------
+Principal Investigator: Dr. Sarah Chen (schen@tetrascience.edu)
+Lab Manager: Dr. Michael Rodriguez (mrodriguez@tetrascience.edu)
+MS Facility: proteomics-facility@tetrascience.edu
+Emergency Contact: +1-555-0123
+
+================================================================================
+END OF PROTOCOL
+================================================================================`;
 
 // Sample data for proteomics study 3
 const searchResults: SearchResult[] = [
@@ -22,6 +205,7 @@ const searchResults: SearchResult[] = [
     uploadedAt: '01/09/2026 04:30:00 PM EST',
     uploadedAtRelative: 'Yesterday',
     fileType: 'document',
+    content: protocolContent,
   },
   {
     id: '2',
@@ -160,6 +344,14 @@ const StarIcon = () => (
   </svg>
 );
 
+const SaveIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+    <polyline points="7 3 7 8 15 8"></polyline>
+  </svg>
+);
+
 const InfoIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"></circle>
@@ -191,8 +383,8 @@ const MoreIcon = () => (
   </svg>
 );
 
-const BookmarkIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+const BookmarkIcon = ({ filled = false }: { filled?: boolean }) => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
   </svg>
 );
@@ -261,6 +453,8 @@ function SearchResultsPage() {
   const [showInfo, setShowInfo] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showFilterView, setShowFilterView] = useState(false);
+  const [bookmarkedItems, setBookmarkedItems] = useState<Set<string>>(new Set());
+  const [toast, setToast] = useState<{message: string, visible: boolean, fadeOut: boolean}>({message: '', visible: false, fadeOut: false});
 
   const handleSelectAll = () => {
     if (selectAll) {
@@ -295,6 +489,55 @@ function SearchResultsPage() {
       console.error('Failed to copy:', err);
     }
   };
+
+  const handleBookmark = (id: string, name: string) => {
+    const newBookmarked = new Set(bookmarkedItems);
+    if (newBookmarked.has(id)) {
+      newBookmarked.delete(id);
+      setToast({message: `${name} removed from bookmarks`, visible: true, fadeOut: false});
+    } else {
+      newBookmarked.add(id);
+      setToast({message: `${name} bookmarked`, visible: true, fadeOut: false});
+    }
+    setBookmarkedItems(newBookmarked);
+  };
+
+  const handleDownload = (name: string, content?: string) => {
+    if (!content) {
+      console.log('No content available for download');
+      return;
+    }
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Auto-hide toast with fade-out
+  useEffect(() => {
+    if (toast.visible && !toast.fadeOut) {
+      // Start fade-out after 2.7 seconds
+      const fadeTimer = setTimeout(() => {
+        setToast(prev => ({...prev, fadeOut: true}));
+      }, 2700);
+
+      // Hide completely after fade-out animation (300ms)
+      const hideTimer = setTimeout(() => {
+        setToast({message: '', visible: false, fadeOut: false});
+      }, 3000);
+
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(hideTimer);
+      };
+    }
+  }, [toast.visible, toast.fadeOut]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -352,12 +595,23 @@ function SearchResultsPage() {
           className="action-icon-btn"
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/details/${row.id}`);
+            handleBookmark(row.id, row.name);
           }}
-          aria-label="Preview"
-          title="Preview"
+          aria-label="Bookmark"
+          data-tooltip="Bookmark"
         >
-          <PreviewIcon />
+          <BookmarkIcon filled={bookmarkedItems.has(row.id)} />
+        </button>
+        <button
+          className="action-icon-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDownload(row.name, row.content);
+          }}
+          aria-label="Download"
+          data-tooltip="Download"
+        >
+          <DownloadIcon />
         </button>
         <button
           className="action-icon-btn"
@@ -366,7 +620,7 @@ function SearchResultsPage() {
             setShowInfo(true);
           }}
           aria-label="About"
-          title="About"
+          data-tooltip="About"
         >
           <InfoIcon />
         </button>
@@ -378,34 +632,12 @@ function SearchResultsPage() {
               setOpenMenuId(openMenuId === row.id ? null : row.id);
             }}
             aria-label="More actions"
-            title="More actions"
+            data-tooltip="More actions"
           >
             <MoreIcon />
           </button>
           {openMenuId === row.id && (
             <div className="action-menu">
-              <button
-                className="action-menu-item"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log('Bookmark', row.name);
-                  setOpenMenuId(null);
-                }}
-              >
-                <BookmarkIcon />
-                <span>Bookmark</span>
-              </button>
-              <button
-                className="action-menu-item"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log('Download', row.name);
-                  setOpenMenuId(null);
-                }}
-              >
-                <DownloadIcon />
-                <span>Download</span>
-              </button>
               <button
                 className="action-menu-item"
                 onClick={(e) => {
@@ -488,34 +720,36 @@ function SearchResultsPage() {
         </div>
       </div>
 
+      <div className={`search-filter-view ${showFilterView ? 'visible' : ''}`}>
+        <FilterCard
+          onClose={() => setShowFilterView(false)}
+          onSearch={() => setShowFilterView(false)}
+        />
+      </div>
+
       <div className="action-bar">
         <div className="action-bar-left">
-          <button className="action-btn">
-            <StarIcon />
-            <span>Save Search</span>
-          </button>
-        </div>
-        <div className="action-bar-right">
-          <button className="action-btn" disabled={!hasSelection}>
+          <button className="action-btn" disabled={!hasSelection} data-tooltip="Bookmark All">
             <BookmarkIcon />
-            <span>Bookmark</span>
+            <span className="action-btn-text">Bookmark All</span>
           </button>
-          <button className="action-btn" disabled={!hasSelection}>
+          <button className="action-btn" disabled={!hasSelection} data-tooltip="Share All">
             <ShareIcon />
-            <span>Share</span>
+            <span className="action-btn-text">Share All</span>
           </button>
-          <button className="action-btn" disabled={!hasSelection}>
+          <button className="action-btn" disabled={!hasSelection} data-tooltip="Download All">
             <DownloadIcon />
-            <span>Download</span>
+            <span className="action-btn-text">Download All</span>
           </button>
           <div className="bulk-menu-wrapper">
             <button
               className="action-btn"
               disabled={!hasSelection}
               onClick={() => hasSelection && setBulkMenuOpen(!bulkMenuOpen)}
+              data-tooltip="More"
             >
               <MoreIcon />
-              <span>More</span>
+              <span className="action-btn-text">More</span>
             </button>
             {bulkMenuOpen && hasSelection && (
               <div className="bulk-action-menu">
@@ -533,13 +767,12 @@ function SearchResultsPage() {
             )}
           </div>
         </div>
-      </div>
-
-      <div className={`search-filter-view ${showFilterView ? 'visible' : ''}`}>
-        <FilterCard
-          onClose={() => setShowFilterView(false)}
-          onSearch={() => setShowFilterView(false)}
-        />
+        <div className="action-bar-right">
+          <button className="action-btn" data-tooltip="Save Search">
+            <SaveIcon />
+            <span className="action-btn-text">Save Search</span>
+          </button>
+        </div>
       </div>
 
       <div className="search-results-content" ref={tableRef}>
@@ -638,6 +871,13 @@ function SearchResultsPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast.visible && (
+        <div className={`toast-notification ${toast.fadeOut ? 'fade-out' : ''}`}>
+          {toast.message}
         </div>
       )}
     </div>

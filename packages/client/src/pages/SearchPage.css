@@ -269,11 +269,15 @@
 
 /* Filter View */
 .search-filter-view {
-  max-width: 800px;
-  margin: 0 auto 2rem auto;
+  margin-bottom: 2rem;
   display: none;
 }
 
 .search-filter-view.visible {
   display: block;
+}
+
+.search-filter-view .filter-card {
+  width: 100%;
+  box-sizing: border-box;
 }
