@@ -8153,7 +8153,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"plotly.js@npm:^3.0.1":
+"plotly.js@npm:^3.0.1, plotly.js@npm:^3.3.1":
   version: 3.3.1
   resolution: "plotly.js@npm:3.3.1"
   dependencies:
@@ -9763,7 +9763,11 @@ __metadata:
   dependencies:
     "@dotenvx/dotenvx": "npm:^1.34.0"
     "@tetrascience-npm/tetrascience-react-ui": "npm:^0.2.0"
+    "@types/plotly.js": "npm:^3.0.0"
+    "@types/react": "npm:^18.3.0"
+    plotly.js: "npm:^3.3.1"
     plotly.js-dist-min: "npm:^3.3.1"
+    react: "npm:^18.3.0"
     react-plotly.js: "npm:^2.6.0"
     typescript: "npm:~5.7.2"
   languageName: unknown
