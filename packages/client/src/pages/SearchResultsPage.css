@@ -372,4 +372,9 @@
 /* Filter View */
 .search-filter-view {
   margin-bottom: 1.5rem;
+  display: none;
+}
+
+.search-filter-view.visible {
+  display: block;
 }

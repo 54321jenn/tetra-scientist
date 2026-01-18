@@ -106,17 +106,15 @@ function SearchPage() {
         </div>
       </div>
 
-      {showFilterView && (
-        <div className="search-filter-view">
-          <FilterCard
-            onClose={() => setShowFilterView(false)}
-            onSearch={() => {
-              setShowFilterView(false);
-              navigate('/search-results');
-            }}
-          />
-        </div>
-      )}
+      <div className={`search-filter-view ${showFilterView ? 'visible' : ''}`}>
+        <FilterCard
+          onClose={() => setShowFilterView(false)}
+          onSearch={() => {
+            setShowFilterView(false);
+            navigate('/search-results');
+          }}
+        />
+      </div>
 
       <div className="search-sections">
         <div className="search-section">

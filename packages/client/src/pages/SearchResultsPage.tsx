@@ -535,14 +535,12 @@ function SearchResultsPage() {
         </div>
       </div>
 
-      {showFilterView && (
-        <div className="search-filter-view">
-          <FilterCard
-            onClose={() => setShowFilterView(false)}
-            onSearch={() => setShowFilterView(false)}
-          />
-        </div>
-      )}
+      <div className={`search-filter-view ${showFilterView ? 'visible' : ''}`}>
+        <FilterCard
+          onClose={() => setShowFilterView(false)}
+          onSearch={() => setShowFilterView(false)}
+        />
+      </div>
 
       <div className="search-results-content" ref={tableRef}>
         <CustomTable

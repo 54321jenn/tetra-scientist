@@ -271,4 +271,9 @@
 .search-filter-view {
   max-width: 800px;
   margin: 0 auto 2rem auto;
+  display: none;
+}
+
+.search-filter-view.visible {
+  display: block;
 }
