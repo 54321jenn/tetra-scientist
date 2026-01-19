@@ -103,6 +103,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
   const [isModified, setIsModified] = useState(false);
   const [savedState, setSavedState] = useState<{order: string[], values: any} | null>(null);
   const [toast, setToast] = useState<{message: string, visible: boolean, fadeOut: boolean}>({message: '', visible: false, fadeOut: false});
+  const [isCreatingNewFilter, setIsCreatingNewFilter] = useState(false);
   const loadDropdownRef = useRef<HTMLDivElement>(null);
 
   // Toast auto-hide with fade-out
@@ -529,6 +530,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
       setCurrentFilterName('Filters');
       setSavedState(null);
       setIsModified(false);
+      setIsCreatingNewFilter(false);
     }
 
     setFilterToDelete(null);
@@ -549,6 +551,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
     // Reset to only the saved filters
     setFilterOrder(filterData.order);
     setCurrentFilterName(filterData.name);
+    setIsCreatingNewFilter(false);
 
     // Clear all values first
     setFileName('');
@@ -1003,13 +1006,14 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
                       setModifiedOn('');
                       setTags('');
                       setType('');
-                      setCurrentFilterName('Filters');
+                      setCurrentFilterName('Create new filter');
                       setSavedState(null);
                       setIsModified(false);
+                      setIsCreatingNewFilter(true);
                       setShowLoadDropdown(false);
                     }}
                   >
-                    <span className="filter-load-item-title">Filters</span>
+                    <span className="filter-load-item-title">Create filter</span>
                   </button>
                 </div>
               </div>
@@ -1039,82 +1043,123 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
       <div className="filter-fields">
         {filterOrder.length === 0 ? (
           <div className="filter-empty-state">
-            <h2 className="filter-empty-title">Filters</h2>
-            <p className="filter-empty-subtitle">Select a saved filter or create a new one</p>
+            {isCreatingNewFilter ? (
+              /* Create new filter empty state */
+              <>
+                <h2 className="filter-empty-title">Create new filter</h2>
+                <p className="filter-empty-subtitle">Select filters</p>
 
-            <div className="filter-empty-actions">
-              {savedFilters.length > 0 ? (
-                <>
-                  {/* Primary action: Select saved filter */}
-                  <div className="filter-empty-add">
-                    <div className="filter-select">
-                      <select
-                        className="filter-select-input"
-                        value=""
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            const selectedFilter = savedFilters.find(f => f.name === e.target.value);
-                            if (selectedFilter) {
-                              handleLoadFilter(selectedFilter);
-                            }
-                          }
-                        }}
-                      >
-                        <option value="">Select saved filter</option>
-                        {savedFilters.map(filter => (
-                          <option key={filter.name} value={filter.name}>
-                            {filter.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDownIcon />
-                    </div>
-                  </div>
-
-                  {/* Secondary action: Create new filter text link */}
+                <div className="filter-empty-actions">
                   {availableFilters.length > 0 && (
-                    <div className="filter-empty-secondary">
-                      <button
-                        className="filter-create-new-link"
-                        onClick={() => {
-                          // Add the first available filter to start creating a new one
-                          if (availableFilters.length > 0) {
-                            addFilter(availableFilters[0].value);
-                          }
-                        }}
-                      >
-                        Create new filter
-                      </button>
+                    <div className="filter-empty-add">
+                      <div className="filter-select">
+                        <select
+                          className="filter-select-input"
+                          value=""
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              addFilter(e.target.value);
+                              setIsCreatingNewFilter(false);
+                            }
+                          }}
+                        >
+                          <option value="">Select filters</option>
+                          {availableFilters.map(filter => (
+                            <option key={filter.value} value={filter.value}>
+                              {filter.label}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDownIcon />
+                      </div>
                     </div>
                   )}
-                </>
-              ) : (
-                /* No saved filters: Create new filter is primary action */
-                availableFilters.length > 0 && (
-                  <div className="filter-empty-add">
-                    <div className="filter-select">
-                      <select
-                        className="filter-select-input"
-                        value=""
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            addFilter(e.target.value);
-                          }
-                        }}
-                      >
-                        <option value="">Create new filter</option>
-                        {availableFilters.map(filter => (
-                          <option key={filter.value} value={filter.value}>
-                            {filter.label}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDownIcon />
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
+                </div>
+              </>
+            ) : (
+              /* Regular empty state */
+              <>
+                <h2 className="filter-empty-title">Filters</h2>
+                <p className="filter-empty-subtitle">Select a saved filter or create a new one</p>
+
+                <div className="filter-empty-actions">
+                  {savedFilters.length > 0 ? (
+                    <>
+                      {/* Primary action: Select saved filter */}
+                      <div className="filter-empty-add">
+                        <div className="filter-select">
+                          <select
+                            className="filter-select-input"
+                            value=""
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                const selectedFilter = savedFilters.find(f => f.name === e.target.value);
+                                if (selectedFilter) {
+                                  handleLoadFilter(selectedFilter);
+                                  setIsCreatingNewFilter(false);
+                                }
+                              }
+                            }}
+                          >
+                            <option value="">Select saved filter</option>
+                            {savedFilters.map(filter => (
+                              <option key={filter.name} value={filter.name}>
+                                {filter.name}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDownIcon />
+                        </div>
+                      </div>
+
+                      {/* Secondary action: Create new filter text link */}
+                      {availableFilters.length > 0 && (
+                        <div className="filter-empty-secondary">
+                          <button
+                            className="filter-create-new-link"
+                            onClick={() => {
+                              // Add the first available filter to start creating a new one
+                              if (availableFilters.length > 0) {
+                                addFilter(availableFilters[0].value);
+                                setIsCreatingNewFilter(false);
+                              }
+                            }}
+                          >
+                            Create new filter
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    /* No saved filters: Create new filter is primary action */
+                    availableFilters.length > 0 && (
+                      <div className="filter-empty-add">
+                        <div className="filter-select">
+                          <select
+                            className="filter-select-input"
+                            value=""
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                addFilter(e.target.value);
+                                setIsCreatingNewFilter(false);
+                              }
+                            }}
+                          >
+                            <option value="">Create new filter</option>
+                            {availableFilters.map(filter => (
+                              <option key={filter.value} value={filter.value}>
+                                {filter.label}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDownIcon />
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <div className="filter-grid">
