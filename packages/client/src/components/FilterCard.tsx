@@ -1037,7 +1037,8 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
       <div className="filter-fields">
         {filterOrder.length === 0 ? (
           <div className="filter-empty-state">
-            <p className="filter-empty-subtitle">Select or create a filter</p>
+            <h2 className="filter-empty-title">Filters</h2>
+            <p className="filter-empty-subtitle">Select a saved filter or create a new one to refine your search results</p>
 
             <div className="filter-empty-actions">
               {savedFilters.length > 0 ? (

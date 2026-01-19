@@ -160,16 +160,26 @@
 }
 
 .filter-empty-title {
-  font-size: 1rem;
-  font-weight: 600;
+  /* Material Design 3 Headline Small */
+  font-size: 1.5rem;
+  font-weight: 475;
+  line-height: 2rem;
   color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 1rem 0;
+  letter-spacing: 0;
 }
 
 .filter-empty-subtitle {
-  font-size: 0.875rem;
+  /* Material Design 3 Body Large */
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5rem;
   color: var(--text-secondary);
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 2rem 0;
+  letter-spacing: 0;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .filter-empty-add {
@@ -791,12 +801,12 @@
   color: #1976D2;
   font-size: 0.875rem;
   cursor: pointer;
-  text-decoration: underline;
+  text-decoration: none;
   padding: 0;
   transition: color 0.2s ease;
 }
 
 .filter-create-new-link:hover {
   color: #1565C0;
-  text-decoration: underline;
+  text-decoration: none;
 }
