@@ -481,6 +481,9 @@ function SearchResultsPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showFilterView, setShowFilterView] = useState(false);
   const [bookmarkedItems, setBookmarkedItems] = useState<Set<string>>(new Set());
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [shareItemName, setShareItemName] = useState('');
   const [toast, setToast] = useState<{message: string, visible: boolean, fadeOut: boolean}>({message: '', visible: false, fadeOut: false});
   const [columnsMenuOpen, setColumnsMenuOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState({
@@ -672,6 +675,35 @@ function SearchResultsPage() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [openMenuId, bulkMenuOpen, showInfo]);
 
+  const handleShare = (itemId: string, itemName: string) => {
+    // Generate a shareable URL for the specific item
+    const baseUrl = window.location.origin;
+    const shareableUrl = `${baseUrl}/details/${itemId}`;
+
+    setShareUrl(shareableUrl);
+    setShareItemName(itemName);
+    setShowShareModal(true);
+    setOpenMenuId(null);
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setToast({message: 'Link copied to clipboard', visible: true, fadeOut: false});
+      setShowShareModal(false);
+    } catch (err) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = shareUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setToast({message: 'Link copied to clipboard', visible: true, fadeOut: false});
+      setShowShareModal(false);
+    }
+  };
+
   // Add checkbox column to data
   const dataWithCheckbox = searchResults.map(row => {
     const baseData = {
@@ -755,8 +787,7 @@ function SearchResultsPage() {
                 className="action-menu-item"
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log('Share', row.name);
-                  setOpenMenuId(null);
+                  handleShare(row.id, row.name);
                 }}
               >
                 <ShareIcon />
@@ -1314,6 +1345,57 @@ function SearchResultsPage() {
             <div className="modal-footer">
               <button className="modal-btn modal-btn-secondary" onClick={() => setShowColumnManager(false)}>
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="modal-overlay" onClick={() => setShowShareModal(false)}>
+          <div className="modal-content modal-content-medium" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Share "{shareItemName}"</h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowShareModal(false)}
+                aria-label="Close modal"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p className="modal-description">Share this item with others by copying the link below:</p>
+              <div className="share-url-container">
+                <input
+                  type="text"
+                  className="share-url-input"
+                  value={shareUrl}
+                  readOnly
+                />
+                <button
+                  className="share-copy-btn"
+                  onClick={handleCopyLink}
+                  title="Copy link"
+                  aria-label="Copy link"
+                >
+                  <CopyIcon />
+                </button>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="modal-btn-cancel"
+                onClick={() => setShowShareModal(false)}
+              >
+                Close
+              </button>
+              <button
+                className="modal-btn-save"
+                onClick={handleCopyLink}
+              >
+                Copy Link
               </button>
             </div>
           </div>

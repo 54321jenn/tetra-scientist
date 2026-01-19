@@ -74,6 +74,8 @@ const SearchIcon = () => (
   </svg>
 );
 
+
+
 function FilterCard({ onClose, onSearch }: FilterCardProps) {
   const [fileName, setFileName] = useState('');
   const [createdOn, setCreatedOn] = useState('');
@@ -105,6 +107,69 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
   const [toast, setToast] = useState<{message: string, visible: boolean, fadeOut: boolean}>({message: '', visible: false, fadeOut: false});
   const [isCreatingNewFilter, setIsCreatingNewFilter] = useState(false);
   const loadDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Load shared filter from URL on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedFilter = urlParams.get('filter');
+
+    if (sharedFilter) {
+      try {
+        const filterState = JSON.parse(decodeURIComponent(sharedFilter));
+
+        // Apply the shared filter
+        setFilterOrder(filterState.order || []);
+        setCurrentFilterName(filterState.name || 'Shared Filter');
+        setIsCreatingNewFilter(false);
+
+        // Apply all the filter values
+        const values = filterState.values || {};
+        setFileName(values.fileName || '');
+        setCreatedOn(values.createdOn || '');
+        setCreatedBetweenStart(values.createdBetweenStart || '');
+        setCreatedBetweenEnd(values.createdBetweenEnd || '');
+        setCreatedBetweenLabel(values.createdBetweenLabel || 'Created between');
+        setInstrument(values.instrument || '');
+        setSoftware(values.software || '');
+        setModifiedBetweenStart(values.modifiedBetweenStart || '');
+        setModifiedBetweenEnd(values.modifiedBetweenEnd || '');
+        setModifiedOn(values.modifiedOn || '');
+        setTags(values.tags || '');
+        setType(values.type || '');
+
+        // Save the state for comparison - this prevents showing "modified" immediately
+        setSavedState({
+          order: filterState.order || [],
+          values: {
+            fileName: values.fileName || '',
+            createdOn: values.createdOn || '',
+            createdBetweenStart: values.createdBetweenStart || '',
+            createdBetweenEnd: values.createdBetweenEnd || '',
+            createdBetweenLabel: values.createdBetweenLabel || 'Created between',
+            instrument: values.instrument || '',
+            software: values.software || '',
+            modifiedBetweenStart: values.modifiedBetweenStart || '',
+            modifiedBetweenEnd: values.modifiedBetweenEnd || '',
+            modifiedOn: values.modifiedOn || '',
+            tags: values.tags || '',
+            type: values.type || '',
+          }
+        });
+        setIsModified(false);
+
+        // Clean up the URL by removing the filter parameter
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('filter');
+        window.history.replaceState({}, '', newUrl.toString());
+
+        // Show a toast notification
+        setToast({message: `Loaded shared filter: "${filterState.name || 'Shared Filter'}"`, visible: true, fadeOut: false});
+      } catch (error) {
+        console.error('Failed to parse shared filter:', error);
+        setToast({message: 'Invalid shared filter link', visible: true, fadeOut: false});
+      }
+    }
+  }, []); // Empty dependency array means this runs once on mount
 
   // Toast auto-hide with fade-out
   useEffect(() => {
