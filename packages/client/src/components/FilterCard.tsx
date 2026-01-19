@@ -412,7 +412,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
 
   const handleOpenSaveModal = () => {
     // Pre-fill with current filter name (or empty for new filter)
-    setFilterName(currentFilterName === 'Filters' ? '' : currentFilterName);
+    setFilterName((currentFilterName === 'Filters' || isCreatingNewFilter) ? '' : currentFilterName);
     setShowSaveModal(true);
   };
 
@@ -950,7 +950,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
     <div className="filter-card">
       <div className="filter-card-top-bar">
         <div className="filter-card-title-wrapper">
-          {filterOrder.length > 0 && (
+          {(filterOrder.length > 0 || isCreatingNewFilter) && (
             <div className="filter-load-dropdown-wrapper" ref={loadDropdownRef}>
               <button
                 className="filter-title-dropdown-btn"
@@ -1006,7 +1006,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
                       setModifiedOn('');
                       setTags('');
                       setType('');
-                      setCurrentFilterName('Create new filter');
+                      setCurrentFilterName('New Filter');
                       setSavedState(null);
                       setIsModified(false);
                       setIsCreatingNewFilter(true);
@@ -1020,12 +1020,12 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
             )}
             </div>
           )}
-          {filterOrder.length > 0 && (isModified || currentFilterName === 'Filters') && (
+          {(filterOrder.length > 0 && (isModified || currentFilterName === 'Filters')) || isCreatingNewFilter && (
             <button
               className="filter-card-modified-icon"
               onClick={handleOpenSaveModal}
-              data-tooltip={currentFilterName === 'Filters' ? 'Save filter' : 'Save changes'}
-              aria-label={currentFilterName === 'Filters' ? 'Save filter' : 'Save changes'}
+              data-tooltip={currentFilterName === 'Filters' || isCreatingNewFilter ? 'Save filter' : 'Save changes'}
+              aria-label={currentFilterName === 'Filters' || isCreatingNewFilter ? 'Save filter' : 'Save changes'}
             >
               <SaveIcon />
             </button>
@@ -1046,7 +1046,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
             {isCreatingNewFilter ? (
               /* Create new filter empty state */
               <>
-                <h2 className="filter-empty-title">Create new filter</h2>
+                <h2 className="filter-empty-title">New Filter</h2>
                 <p className="filter-empty-subtitle">Select filters</p>
 
                 <div className="filter-empty-actions">
