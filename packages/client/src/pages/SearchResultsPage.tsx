@@ -383,6 +383,38 @@ const MoreIcon = () => (
   </svg>
 );
 
+const ColumnsIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="6" y1="4" x2="6" y2="20"></line>
+    <line x1="12" y1="4" x2="12" y2="20"></line>
+    <line x1="18" y1="4" x2="18" y2="20"></line>
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
+const DeleteIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
+
+const DragIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="9" cy="5" r="1.5"></circle>
+    <circle cx="9" cy="12" r="1.5"></circle>
+    <circle cx="9" cy="19" r="1.5"></circle>
+    <circle cx="15" cy="5" r="1.5"></circle>
+    <circle cx="15" cy="12" r="1.5"></circle>
+    <circle cx="15" cy="19" r="1.5"></circle>
+  </svg>
+);
+
 const BookmarkIcon = ({ filled = false }: { filled?: boolean }) => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
@@ -430,12 +462,6 @@ const CopyIcon = () => (
   </svg>
 );
 
-const CheckIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12"></polyline>
-  </svg>
-);
-
 const CloseIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -448,6 +474,7 @@ function SearchResultsPage() {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
+  const columnsMenuRef = useRef<HTMLDivElement>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [bulkMenuOpen, setBulkMenuOpen] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -455,6 +482,23 @@ function SearchResultsPage() {
   const [showFilterView, setShowFilterView] = useState(false);
   const [bookmarkedItems, setBookmarkedItems] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<{message: string, visible: boolean, fadeOut: boolean}>({message: '', visible: false, fadeOut: false});
+  const [columnsMenuOpen, setColumnsMenuOpen] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState({
+    name: true,
+    sourceLocation: true,
+    uploadedAt: true,
+  });
+  const [columnOrder, setColumnOrder] = useState<string[]>(['name', 'sourceLocation', 'uploadedAt']);
+  const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
+  const [showColumnManager, setShowColumnManager] = useState(false);
+  const [customColumns, setCustomColumns] = useState<{ [key: string]: { type: string; title: string } }>({});
+  const [draggedModalColumn, setDraggedModalColumn] = useState<string | null>(null);
+  const [selectedNewColumn, setSelectedNewColumn] = useState<string>('');
+  const [columnTitles, setColumnTitles] = useState<{ [key: string]: string }>({
+    name: 'Name',
+    sourceLocation: 'Source Location',
+    uploadedAt: 'Uploaded At',
+  });
 
   const handleSelectAll = () => {
     if (selectAll) {
@@ -519,6 +563,58 @@ function SearchResultsPage() {
     URL.revokeObjectURL(url);
   };
 
+  const handleDragStart = (columnKey: string) => {
+    setDraggedColumn(columnKey);
+  };
+
+  const handleDragOver = (e: React.DragEvent, columnKey: string) => {
+    e.preventDefault();
+    if (draggedColumn && draggedColumn !== columnKey) {
+      const newOrder = [...columnOrder];
+      const draggedIndex = newOrder.indexOf(draggedColumn);
+      const targetIndex = newOrder.indexOf(columnKey);
+
+      newOrder.splice(draggedIndex, 1);
+      newOrder.splice(targetIndex, 0, draggedColumn);
+
+      setColumnOrder(newOrder);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedColumn(null);
+  };
+
+  // Available column types for adding new columns
+  const baseColumnTypes = [
+    { id: 'assay', label: 'Assay' },
+    { id: 'batch', label: 'Batch' },
+    { id: 'cellLine', label: 'Cell Line' },
+    { id: 'dataType', label: 'Data Type' },
+    { id: 'experiment', label: 'Experiment' },
+    { id: 'fileFormat', label: 'File Format' },
+    { id: 'instrument', label: 'Instrument' },
+    { id: 'investigator', label: 'Investigator' },
+    { id: 'notes', label: 'Notes' },
+    { id: 'organism', label: 'Organism' },
+    { id: 'project', label: 'Project' },
+    { id: 'protocol', label: 'Protocol' },
+    { id: 'replicate', label: 'Replicate' },
+    { id: 'sample', label: 'Sample' },
+    { id: 'status', label: 'Status' },
+    { id: 'timepoint', label: 'Timepoint' },
+    { id: 'tissue', label: 'Tissue' },
+    { id: 'treatment', label: 'Treatment' },
+  ];
+
+  // Add default columns to the dropdown if they're not in columnOrder
+  const availableColumnTypes = [
+    ...baseColumnTypes,
+    ...(!columnOrder.includes('name') ? [{ id: 'name', label: 'Name' }] : []),
+    ...(!columnOrder.includes('sourceLocation') ? [{ id: 'sourceLocation', label: 'Source Location' }] : []),
+    ...(!columnOrder.includes('uploadedAt') ? [{ id: 'uploadedAt', label: 'Uploaded At' }] : []),
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   // Auto-hide toast with fade-out
   useEffect(() => {
     if (toast.visible && !toast.fadeOut) {
@@ -538,6 +634,22 @@ function SearchResultsPage() {
       };
     }
   }, [toast.visible, toast.fadeOut]);
+
+  // Close columns menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (columnsMenuRef.current && !columnsMenuRef.current.contains(event.target as Node)) {
+        setColumnsMenuOpen(false);
+      }
+    };
+
+    if (columnsMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [columnsMenuOpen]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -561,34 +673,35 @@ function SearchResultsPage() {
   }, [openMenuId, bulkMenuOpen, showInfo]);
 
   // Add checkbox column to data
-  const dataWithCheckbox = searchResults.map(row => ({
-    ...row,
-    checkbox: (
-      <input
-        type="checkbox"
-        checked={selectedRows.has(row.id)}
-        onChange={(e) => {
-          e.stopPropagation();
-          handleRowSelect(row.id);
-        }}
-        onClick={(e) => e.stopPropagation()}
-        className="row-checkbox"
-        aria-label={`Select ${row.name}`}
-        title={`Select ${row.name}`}
-      />
-    ),
-    nameWithIcon: (
-      <div className="name-cell">
-        <span className="file-icon">{getFileIcon(row.fileType)}</span>
-        <span>{row.name}</span>
-      </div>
-    ),
-    uploadedAtFormatted: (
-      <div className="uploaded-cell">
-        <div className="uploaded-date">{row.uploadedAt}</div>
-        <div className="uploaded-relative">{row.uploadedAtRelative}</div>
-      </div>
-    ),
+  const dataWithCheckbox = searchResults.map(row => {
+    const baseData = {
+      ...row,
+      checkbox: (
+        <input
+          type="checkbox"
+          checked={selectedRows.has(row.id)}
+          onChange={(e) => {
+            e.stopPropagation();
+            handleRowSelect(row.id);
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className="row-checkbox"
+          aria-label={`Select ${row.name}`}
+          title={`Select ${row.name}`}
+        />
+      ),
+      nameWithIcon: (
+        <div className="name-cell">
+          <span className="file-icon">{getFileIcon(row.fileType)}</span>
+          <span>{row.name}</span>
+        </div>
+      ),
+      uploadedAtFormatted: (
+        <div className="uploaded-cell">
+          <div className="uploaded-date">{row.uploadedAt}</div>
+          <div className="uploaded-relative">{row.uploadedAtRelative}</div>
+        </div>
+      ),
     actions: (
       <div className="actions-cell">
         <button
@@ -665,29 +778,110 @@ function SearchResultsPage() {
         </div>
       </div>
     ),
-  }));
+    };
 
-  // Define table columns
-  const columns: TableColumn<typeof dataWithCheckbox[0]>[] = [
-    {
-      key: 'checkbox',
-      header: (
-        <input
-          type="checkbox"
-          checked={selectAll}
-          onChange={handleSelectAll}
-          className="row-checkbox"
-          aria-label="Select all rows"
-          title="Select all rows"
-        />
-      ),
-      width: '50px'
+    // Add custom column data with sample values
+    const customData = Object.keys(customColumns).reduce((acc, key) => {
+      const columnType = customColumns[key].type;
+
+      // Generate sample data based on column type
+      const sampleData: { [key: string]: string[] } = {
+        experiment: ['EXP-2024-001', 'EXP-2024-002', 'EXP-2024-003', 'EXP-2024-004', 'EXP-2024-005'],
+        protocol: ['Protocol A', 'Protocol B', 'Protocol C', 'Protocol A', 'Protocol B'],
+        instrument: ['HPLC-MS-01', 'HPLC-MS-02', 'LC-MS-03', 'HPLC-MS-01', 'LC-MS-03'],
+        sample: ['Sample-001', 'Sample-002', 'Sample-003', 'Sample-004', 'Sample-005'],
+        assay: ['RNA-Seq', 'Proteomics', 'Metabolomics', 'RNA-Seq', 'Proteomics'],
+        batch: ['Batch-A', 'Batch-B', 'Batch-A', 'Batch-C', 'Batch-B'],
+        project: ['Cancer Research', 'Drug Discovery', 'Biomarker Study', 'Cancer Research', 'Drug Discovery'],
+        investigator: ['Dr. Smith', 'Dr. Johnson', 'Dr. Chen', 'Dr. Smith', 'Dr. Johnson'],
+        organism: ['Human', 'Mouse', 'Rat', 'Human', 'Mouse'],
+        tissue: ['Liver', 'Brain', 'Heart', 'Kidney', 'Lung'],
+        cellLine: ['HeLa', 'HEK293', 'CHO', 'HeLa', 'HEK293'],
+        treatment: ['Control', 'Drug A', 'Drug B', 'Control', 'Drug A'],
+        timepoint: ['0h', '24h', '48h', '72h', '0h'],
+        replicate: ['Rep 1', 'Rep 2', 'Rep 3', 'Rep 1', 'Rep 2'],
+        fileFormat: ['CSV', 'XLSX', 'RAW', 'CSV', 'XLSX'],
+        dataType: ['Raw', 'Processed', 'Analyzed', 'Raw', 'Processed'],
+        status: ['Complete', 'In Progress', 'Complete', 'Pending', 'Complete'],
+        notes: ['QC passed', 'Rerun needed', 'Good quality', 'QC passed', 'Good quality'],
+      };
+
+      const values = sampleData[columnType] || ['—', '—', '—', '—', '—'];
+      const rowIndex = searchResults.indexOf(row);
+      acc[key] = values[rowIndex % values.length];
+
+      return acc;
+    }, {} as { [key: string]: any });
+
+    return { ...baseData, ...customData };
+  });
+
+  // Define table columns based on visibility and order
+  const baseColumnDefinitions: { [key: string]: TableColumn<typeof dataWithCheckbox[0]> } = {
+    name: {
+      key: 'nameWithIcon',
+      header: columnTitles.name
     },
-    { key: 'nameWithIcon', header: 'Name' },
-    { key: 'sourceLocation', header: 'Source Location' },
-    { key: 'uploadedAtFormatted', header: 'Uploaded At' },
-    { key: 'actions', header: 'Actions', width: '120px' },
-  ];
+    sourceLocation: {
+      key: 'sourceLocation',
+      header: columnTitles.sourceLocation
+    },
+    uploadedAt: {
+      key: 'uploadedAtFormatted',
+      header: columnTitles.uploadedAt
+    },
+  };
+
+  // Add custom columns to definitions
+  const columnDefinitions: { [key: string]: TableColumn<typeof dataWithCheckbox[0]> } = {
+    ...baseColumnDefinitions,
+    ...Object.keys(customColumns).reduce((acc, key) => {
+      acc[key] = {
+        key: key,
+        header: customColumns[key].title
+      };
+      return acc;
+    }, {} as { [key: string]: TableColumn<typeof dataWithCheckbox[0]> })
+  };
+
+  const checkboxColumn: TableColumn<typeof dataWithCheckbox[0]> = {
+    key: 'checkbox',
+    header: (
+      <input
+        type="checkbox"
+        checked={selectAll}
+        onChange={handleSelectAll}
+        className="row-checkbox"
+        aria-label="Select all rows"
+        title="Select all rows"
+      />
+    ),
+    width: '50px'
+  };
+
+  const actionsColumn: TableColumn<typeof dataWithCheckbox[0]> = {
+    key: 'actions',
+    header: 'Actions',
+    width: '120px'
+  };
+
+  // Build columns array based on order and visibility
+  const orderedColumns = columnOrder
+    .filter(key => {
+      // Check if column exists in columnDefinitions
+      if (!columnDefinitions[key]) return false;
+
+      // Check visibility for default columns
+      if (key === 'name') return visibleColumns.name;
+      if (key === 'sourceLocation') return visibleColumns.sourceLocation;
+      if (key === 'uploadedAt') return visibleColumns.uploadedAt;
+
+      // Custom columns are always visible if they're in columnOrder
+      return true;
+    })
+    .map(key => columnDefinitions[key]);
+
+  const columns = [checkboxColumn, ...orderedColumns, actionsColumn];
 
   // Handle row click to navigate to details page
   const handleRowClick = (row: typeof dataWithCheckbox[0]) => {
@@ -768,6 +962,71 @@ function SearchResultsPage() {
           </div>
         </div>
         <div className="action-bar-right">
+          <div className="columns-menu-wrapper" ref={columnsMenuRef}>
+            <button
+              className="action-btn"
+              onClick={() => setColumnsMenuOpen(!columnsMenuOpen)}
+              data-tooltip="Columns"
+            >
+              <ColumnsIcon />
+              <span className="action-btn-text">Columns</span>
+            </button>
+            {columnsMenuOpen && (
+              <div className="columns-menu">
+                {columnOrder.map((columnKey) => {
+                  const customColumn = customColumns[columnKey];
+                  const label = customColumn ? customColumn.title : (columnTitles[columnKey] || columnKey);
+                  const isVisible = columnKey === 'name' ? visibleColumns.name :
+                                   columnKey === 'sourceLocation' ? visibleColumns.sourceLocation :
+                                   columnKey === 'uploadedAt' ? visibleColumns.uploadedAt :
+                                   (visibleColumns as any)[columnKey];
+
+                  // Count visible columns
+                  const visibleCount = Object.values(visibleColumns).filter(v => v).length;
+                  const isLastVisible = visibleCount === 1 && isVisible;
+
+                  return (
+                    <label
+                      key={columnKey}
+                      className={`columns-menu-item ${draggedColumn === columnKey ? 'dragging' : ''} ${isLastVisible ? 'disabled' : ''}`}
+                      draggable
+                      onDragStart={() => handleDragStart(columnKey)}
+                      onDragOver={(e) => handleDragOver(e, columnKey)}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <DragIcon />
+                      <span>{label}</span>
+                      <span
+                        className="tooltip-wrapper column-check-icon"
+                        data-tooltip={isLastVisible ? 'At least one column must be visible' : 'Click to hide column'}
+                        style={{ visibility: isVisible ? 'visible' : 'hidden' }}
+                      >
+                        <CheckIcon />
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={isVisible}
+                        disabled={isLastVisible}
+                        onChange={(e) => {
+                          setVisibleColumns({...visibleColumns, [columnKey]: e.target.checked});
+                        }}
+                      />
+                    </label>
+                  );
+                })}
+                <div className="columns-menu-divider"></div>
+                <div
+                  className="columns-menu-item edit-columns-btn"
+                  onClick={() => {
+                    setShowColumnManager(true);
+                    setColumnsMenuOpen(false);
+                  }}
+                >
+                  <span>Edit Columns</span>
+                </div>
+              </div>
+            )}
+          </div>
           <button className="action-btn" data-tooltip="Save Search">
             <SaveIcon />
             <span className="action-btn-text">Save Search</span>
@@ -878,6 +1137,182 @@ function SearchResultsPage() {
       {toast.visible && (
         <div className={`toast-notification ${toast.fadeOut ? 'fade-out' : ''}`}>
           {toast.message}
+        </div>
+      )}
+
+      {/* Column Manager Modal */}
+      {showColumnManager && (
+        <div className="modal-overlay" onClick={() => setShowColumnManager(false)}>
+          <div className="column-manager-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Edit Columns</h2>
+              <button className="modal-close-btn" onClick={() => setShowColumnManager(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="column-manager-section">
+                <div className="current-columns-list">
+                  {columnOrder.map((columnKey, index) => {
+                    const customColumn = customColumns[columnKey];
+                    const defaultTitles: { [key: string]: string } = {
+                      name: 'Name',
+                      sourceLocation: 'Source Location',
+                      uploadedAt: 'Uploaded At',
+                    };
+                    const originalName = customColumn
+                      ? availableColumnTypes.find(t => t.id === customColumn.type)?.label || customColumn.type
+                      : defaultTitles[columnKey] || columnKey;
+                    const displayName = customColumn ? customColumn.title : (columnTitles[columnKey] || defaultTitles[columnKey] || columnKey);
+                    const isCustomColumn = !!customColumn;
+
+                    return (
+                      <div
+                        key={columnKey}
+                        className={`current-column-item ${draggedModalColumn === columnKey ? 'dragging' : ''}`}
+                        draggable
+                        onDragStart={() => setDraggedModalColumn(columnKey)}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          if (draggedModalColumn && draggedModalColumn !== columnKey) {
+                            const newOrder = [...columnOrder];
+                            const draggedIndex = newOrder.indexOf(draggedModalColumn);
+                            const targetIndex = newOrder.indexOf(columnKey);
+
+                            newOrder.splice(draggedIndex, 1);
+                            newOrder.splice(targetIndex, 0, draggedModalColumn);
+
+                            setColumnOrder(newOrder);
+                          }
+                        }}
+                        onDragEnd={() => setDraggedModalColumn(null)}
+                      >
+                        <DragIcon />
+                        <label className="column-checkbox-label">
+                          <input
+                            type="checkbox"
+                            checked={
+                              columnKey === 'name' ? visibleColumns.name :
+                              columnKey === 'sourceLocation' ? visibleColumns.sourceLocation :
+                              columnKey === 'uploadedAt' ? visibleColumns.uploadedAt :
+                              true
+                            }
+                            onChange={(e) => {
+                              if (columnKey === 'name' || columnKey === 'sourceLocation' || columnKey === 'uploadedAt') {
+                                setVisibleColumns({
+                                  ...visibleColumns,
+                                  [columnKey]: e.target.checked
+                                } as any);
+                              }
+                            }}
+                            disabled={
+                              (columnKey === 'name' && visibleColumns.name && !visibleColumns.sourceLocation && !visibleColumns.uploadedAt) ||
+                              (columnKey === 'sourceLocation' && visibleColumns.sourceLocation && !visibleColumns.name && !visibleColumns.uploadedAt) ||
+                              (columnKey === 'uploadedAt' && visibleColumns.uploadedAt && !visibleColumns.name && !visibleColumns.sourceLocation)
+                            }
+                            className="column-checkbox"
+                          />
+                          {(columnKey === 'name' ? visibleColumns.name :
+                            columnKey === 'sourceLocation' ? visibleColumns.sourceLocation :
+                            columnKey === 'uploadedAt' ? visibleColumns.uploadedAt :
+                            true) && <CheckIcon />}
+                        </label>
+                        <div className="column-info">
+                          <div className="column-original-name">{originalName}</div>
+                          <input
+                            type="text"
+                            value={displayName}
+                            onChange={(e) => {
+                              if (isCustomColumn) {
+                                setCustomColumns({
+                                  ...customColumns,
+                                  [columnKey]: { ...customColumn, title: e.target.value }
+                                });
+                              } else {
+                                setColumnTitles({
+                                  ...columnTitles,
+                                  [columnKey]: e.target.value
+                                });
+                              }
+                            }}
+                            placeholder="Display name"
+                            className="column-title-input"
+                          />
+                        </div>
+                        <button
+                          className="remove-column-btn"
+                          onClick={() => {
+                            if (isCustomColumn) {
+                              const newColumns = { ...customColumns };
+                              delete newColumns[columnKey];
+                              setCustomColumns(newColumns);
+                            }
+                            setColumnOrder(columnOrder.filter(k => k !== columnKey));
+                            const newVisibleColumns = { ...visibleColumns };
+                            delete (newVisibleColumns as any)[columnKey];
+                            setVisibleColumns(newVisibleColumns);
+                          }}
+                          disabled={columnOrder.length === 1}
+                          aria-label="Remove column"
+                        >
+                          <DeleteIcon />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="column-manager-section add-column-section">
+                <select
+                  className="add-column-select"
+                  value={selectedNewColumn}
+                  onChange={(e) => {
+                    const columnType = availableColumnTypes.find(t => t.id === e.target.value);
+                    if (columnType) {
+                      // Check if it's a default column being re-added
+                      if (columnType.id === 'name' || columnType.id === 'sourceLocation' || columnType.id === 'uploadedAt') {
+                        setColumnOrder([...columnOrder, columnType.id]);
+                        setVisibleColumns({ ...visibleColumns, [columnType.id]: true } as any);
+                      } else {
+                        // It's a custom column
+                        const newKey = `custom_${columnType.id}_${Date.now()}`;
+                        setCustomColumns({
+                          ...customColumns,
+                          [newKey]: { type: columnType.id, title: columnType.label }
+                        });
+                        setColumnOrder([...columnOrder, newKey]);
+                        setVisibleColumns({ ...visibleColumns, [newKey]: true } as any);
+                      }
+                      setSelectedNewColumn('');
+                    }
+                  }}
+                >
+                  <option value="">Add column...</option>
+                  {availableColumnTypes
+                    .filter((columnType) => {
+                      // Check if this column type is already added
+                      return !Object.values(customColumns).some(col => col.type === columnType.id);
+                    })
+                    .map((columnType) => (
+                      <option key={columnType.id} value={columnType.id}>
+                        {columnType.label}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="modal-btn modal-btn-secondary" onClick={() => setShowColumnManager(false)}>
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
