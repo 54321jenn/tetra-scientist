@@ -1037,31 +1037,60 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
       <div className="filter-fields">
         {filterOrder.length === 0 ? (
           <div className="filter-empty-state">
-            <h3 className="filter-empty-title">No filters applied</h3>
-            <p className="filter-empty-subtitle">Add filters to refine your search results</p>
-            {availableFilters.length > 0 && (
-              <div className="filter-empty-add">
-                <div className="filter-select">
-                  <select
-                    className="filter-select-input"
-                    value=""
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        addFilter(e.target.value);
-                      }
-                    }}
-                  >
-                    <option value="">Add a filter</option>
-                    {availableFilters.map(filter => (
-                      <option key={filter.value} value={filter.value}>
-                        {filter.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDownIcon />
+            <p className="filter-empty-subtitle">Select or create a filter</p>
+
+            <div className="filter-empty-actions">
+              {savedFilters.length > 0 && (
+                <div className="filter-empty-add">
+                  <div className="filter-select">
+                    <select
+                      className="filter-select-input"
+                      value=""
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          const selectedFilter = savedFilters.find(f => f.name === e.target.value);
+                          if (selectedFilter) {
+                            handleLoadFilter(selectedFilter);
+                          }
+                        }
+                      }}
+                    >
+                      <option value="">Select saved filter</option>
+                      {savedFilters.map(filter => (
+                        <option key={filter.name} value={filter.name}>
+                          {filter.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDownIcon />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {availableFilters.length > 0 && (
+                <div className="filter-empty-add">
+                  <div className="filter-select">
+                    <select
+                      className="filter-select-input"
+                      value=""
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          addFilter(e.target.value);
+                        }
+                      }}
+                    >
+                      <option value="">Create new filter</option>
+                      {availableFilters.map(filter => (
+                        <option key={filter.value} value={filter.value}>
+                          {filter.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDownIcon />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="filter-grid">

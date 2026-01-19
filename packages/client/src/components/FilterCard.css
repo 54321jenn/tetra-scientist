@@ -770,3 +770,22 @@
     opacity: 0;
   }
 }
+
+/* Empty State Actions */
+.filter-empty-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .filter-empty-actions {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+
+  .filter-empty-actions .filter-empty-add {
+    flex: 1;
+  }
+}
