@@ -99,7 +99,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
   const [filterName, setFilterName] = useState('');
   const [editingFilter, setEditingFilter] = useState<string | null>(null);
   const [filterToDelete, setFilterToDelete] = useState<string | null>(null);
-  const [currentFilterName, setCurrentFilterName] = useState<string>('New Filter');
+  const [currentFilterName, setCurrentFilterName] = useState<string>('Filters');
   const [isModified, setIsModified] = useState(false);
   const [savedState, setSavedState] = useState<{order: string[], values: any} | null>(null);
   const [toast, setToast] = useState<{message: string, visible: boolean, fadeOut: boolean}>({message: '', visible: false, fadeOut: false});
@@ -411,7 +411,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
 
   const handleOpenSaveModal = () => {
     // Pre-fill with current filter name (or empty for new filter)
-    setFilterName(currentFilterName === 'New Filter' ? '' : currentFilterName);
+    setFilterName(currentFilterName === 'Filters' ? '' : currentFilterName);
     setShowSaveModal(true);
   };
 
@@ -446,7 +446,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
     // Check if we're updating an existing filter or creating a new one
     const existingFilterIndex = savedFilters.findIndex(f => f.name === oldName);
 
-    if (existingFilterIndex !== -1 && oldName !== 'New Filter') {
+    if (existingFilterIndex !== -1 && oldName !== 'Filters') {
       // Updating existing filter
       if (newName === oldName) {
         // Same name - just update the filter
@@ -526,7 +526,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
       setModifiedOn('');
       setTags('');
       setType('');
-      setCurrentFilterName('New Filter');
+      setCurrentFilterName('Filters');
       setSavedState(null);
       setIsModified(false);
     }
@@ -1002,24 +1002,24 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
                       setModifiedOn('');
                       setTags('');
                       setType('');
-                      setCurrentFilterName('New Filter');
+                      setCurrentFilterName('Filters');
                       setSavedState(null);
                       setIsModified(false);
                       setShowLoadDropdown(false);
                     }}
                   >
-                    <span className="filter-load-item-title">New Filter</span>
+                    <span className="filter-load-item-title">Filters</span>
                   </button>
                 </div>
               </div>
             )}
           </div>
-          {filterOrder.length > 0 && (isModified || currentFilterName === 'New Filter') && (
+          {filterOrder.length > 0 && (isModified || currentFilterName === 'Filters') && (
             <button
               className="filter-card-modified-icon"
               onClick={handleOpenSaveModal}
-              data-tooltip={currentFilterName === 'New Filter' ? 'Save filter' : 'Save changes'}
-              aria-label={currentFilterName === 'New Filter' ? 'Save filter' : 'Save changes'}
+              data-tooltip={currentFilterName === 'Filters' ? 'Save filter' : 'Save changes'}
+              aria-label={currentFilterName === 'Filters' ? 'Save filter' : 'Save changes'}
             >
               <SaveIcon />
             </button>
