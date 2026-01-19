@@ -1068,34 +1068,20 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
                     </div>
                   </div>
 
-                  {/* Secondary action: Create new filter button */}
+                  {/* Secondary action: Create new filter text link */}
                   {availableFilters.length > 0 && (
                     <div className="filter-empty-secondary">
-                      <div className="filter-create-dropdown-wrapper" ref={loadDropdownRef}>
-                        <button
-                          className="filter-create-new-btn"
-                          onClick={() => setShowLoadDropdown(!showLoadDropdown)}
-                        >
-                          Create new filter
-                          <ChevronDownIcon />
-                        </button>
-                        {showLoadDropdown && (
-                          <div className="filter-create-dropdown">
-                            {availableFilters.map(filter => (
-                              <button
-                                key={filter.value}
-                                className="filter-create-item"
-                                onClick={() => {
-                                  addFilter(filter.value);
-                                  setShowLoadDropdown(false);
-                                }}
-                              >
-                                {filter.label}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      <button
+                        className="filter-create-new-link"
+                        onClick={() => {
+                          // Add the first available filter to start creating a new one
+                          if (availableFilters.length > 0) {
+                            addFilter(availableFilters[0].value);
+                          }
+                        }}
+                      >
+                        Create new filter
+                      </button>
                     </div>
                   )}
                 </>
