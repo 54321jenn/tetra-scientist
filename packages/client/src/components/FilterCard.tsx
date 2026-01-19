@@ -1041,7 +1041,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
       </div>
 
       <div className="filter-fields">
-        {filterOrder.length === 0 ? (
+        {filterOrder.length === 0 && !isCreatingNewFilter ? (
           <div className="filter-empty-state">
             {isCreatingNewFilter ? (
               /* Create new filter empty state */
@@ -1161,13 +1161,16 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
               </>
             )}
           </div>
+        ) : isCreatingNewFilter && filterOrder.length === 0 ? (
+          /* Creating new filter with no criteria yet - show nothing, just the Add filter dropdown below */
+          <div></div>
         ) : (
           <div className="filter-grid">
             {filterOrder.map(filterName => renderFilterField(filterName))}
           </div>
         )}
 
-        {filterOrder.length > 0 && availableFilters.length > 0 && (
+        {((filterOrder.length > 0 && availableFilters.length > 0) || (isCreatingNewFilter && filterOrder.length === 0 && availableFilters.length > 0)) && (
           <div className="filter-add-row">
             <div className="filter-select">
               <select
