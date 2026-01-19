@@ -416,11 +416,18 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
     setShowSaveModal(true);
   };
 
+  const handleCloseSaveModal = () => {
+    setShowSaveModal(false);
+    setFilterName('');
+    setEditingFilter(null);
+  };
+
   const handleSaveFilterFromModal = () => {
     if (!filterName.trim()) return;
 
     const newName = filterName.trim();
-    const oldName = currentFilterName;
+    // If we're editing a filter name, use editingFilter; otherwise use currentFilterName for saving changes
+    const oldName = editingFilter || currentFilterName;
 
     const filterData = {
       name: newName,
@@ -447,7 +454,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
     // Check if we're updating an existing filter or creating a new one
     const existingFilterIndex = savedFilters.findIndex(f => f.name === oldName);
 
-    if (existingFilterIndex !== -1 && oldName !== 'Filters') {
+    if (existingFilterIndex !== -1 && oldName !== 'Filters' && oldName !== 'Create filter') {
       // Updating existing filter
       if (newName === oldName) {
         // Same name - just update the filter
@@ -480,7 +487,13 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
     setSavedFilters(updatedFilters);
     localStorage.setItem('savedFilters', JSON.stringify(updatedFilters));
 
-    setCurrentFilterName(newName);
+    // Update current filter name in these cases:
+    // 1. Creating a new filter (no editingFilter)
+    // 2. Editing the currently loaded filter's name
+    // 3. Saving changes to the current filter
+    if (!editingFilter || editingFilter === currentFilterName || oldName === currentFilterName) {
+      setCurrentFilterName(newName);
+    }
 
     // Update saved state
     setSavedState({
@@ -502,8 +515,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
     });
     setIsModified(false);
 
-    setShowSaveModal(false);
-    setFilterName('');
+    handleCloseSaveModal();
     setToast({message, visible: true, fadeOut: false});
   };
 
@@ -975,6 +987,17 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
                     </button>
                     <div className="filter-load-item-actions">
                       <button
+                        className="filter-load-item-edit"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUpdateFilter(filter.name);
+                        }}
+                        title="Edit filter name"
+                        aria-label="Edit filter name"
+                      >
+                        <EditIcon />
+                      </button>
+                      <button
                         className="filter-load-item-delete"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1006,7 +1029,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
                       setModifiedOn('');
                       setTags('');
                       setType('');
-                      setCurrentFilterName('New Filter');
+                      setCurrentFilterName('Create filter');
                       setSavedState(null);
                       setIsModified(false);
                       setIsCreatingNewFilter(true);
@@ -1020,12 +1043,12 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
             )}
             </div>
           )}
-          {(filterOrder.length > 0 && (isModified || currentFilterName === 'Filters')) || isCreatingNewFilter && (
+          {((filterOrder.length > 0 && isModified) || isCreatingNewFilter) && (
             <button
               className="filter-card-modified-icon"
               onClick={handleOpenSaveModal}
-              data-tooltip={currentFilterName === 'Filters' || isCreatingNewFilter ? 'Save filter' : 'Save changes'}
-              aria-label={currentFilterName === 'Filters' || isCreatingNewFilter ? 'Save filter' : 'Save changes'}
+              data-tooltip={isCreatingNewFilter ? 'Save filter' : 'Save changes'}
+              aria-label={isCreatingNewFilter ? 'Save filter' : 'Save changes'}
             >
               <SaveIcon />
             </button>
@@ -1118,11 +1141,24 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
                           <button
                             className="filter-create-new-link"
                             onClick={() => {
-                              // Add the first available filter to start creating a new one
-                              if (availableFilters.length > 0) {
-                                addFilter(availableFilters[0].value);
-                                setIsCreatingNewFilter(false);
-                              }
+                              // Reset to new filter state
+                              setFilterOrder([]);
+                              setFileName('');
+                              setCreatedOn('');
+                              setCreatedBetweenStart('');
+                              setCreatedBetweenEnd('');
+                              setCreatedBetweenLabel('Created between');
+                              setInstrument('');
+                              setSoftware('');
+                              setModifiedBetweenStart('');
+                              setModifiedBetweenEnd('');
+                              setModifiedOn('');
+                              setTags('');
+                              setType('');
+                              setCurrentFilterName('Create filter');
+                              setSavedState(null);
+                              setIsModified(false);
+                              setIsCreatingNewFilter(true);
                             }}
                           >
                             Create new filter
@@ -1140,8 +1176,26 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
                             value=""
                             onChange={(e) => {
                               if (e.target.value) {
+                                // Reset to new filter state first
+                                setFilterOrder([]);
+                                setFileName('');
+                                setCreatedOn('');
+                                setCreatedBetweenStart('');
+                                setCreatedBetweenEnd('');
+                                setCreatedBetweenLabel('Created between');
+                                setInstrument('');
+                                setSoftware('');
+                                setModifiedBetweenStart('');
+                                setModifiedBetweenEnd('');
+                                setModifiedOn('');
+                                setTags('');
+                                setType('');
+                                setCurrentFilterName('Create filter');
+                                setSavedState(null);
+                                setIsModified(false);
+                                setIsCreatingNewFilter(true);
+                                // Then add the selected filter
                                 addFilter(e.target.value);
-                                setIsCreatingNewFilter(false);
                               }
                             }}
                           >
@@ -1206,13 +1260,13 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
 
       {/* Save Filter Modal */}
       {showSaveModal && (
-        <div className="modal-overlay" onClick={() => setShowSaveModal(false)}>
+        <div className="modal-overlay" onClick={handleCloseSaveModal}>
           <div className="modal-content modal-content-small" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Save Filter</h2>
+              <h2 className="modal-title">{editingFilter ? 'Edit Filter Name' : 'Save Filter'}</h2>
               <button
                 className="modal-close"
-                onClick={() => setShowSaveModal(false)}
+                onClick={handleCloseSaveModal}
                 aria-label="Close modal"
               >
                 <CloseIcon />
@@ -1237,7 +1291,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
             <div className="modal-footer">
               <button
                 className="modal-btn-cancel"
-                onClick={() => setShowSaveModal(false)}
+                onClick={handleCloseSaveModal}
               >
                 Cancel
               </button>
@@ -1246,7 +1300,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
                 onClick={handleSaveFilterFromModal}
                 disabled={!filterName.trim()}
               >
-                Save
+                {editingFilter ? 'Update' : 'Save'}
               </button>
             </div>
           </div>
