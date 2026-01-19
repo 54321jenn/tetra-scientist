@@ -1013,7 +1013,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
                       setShowLoadDropdown(false);
                     }}
                   >
-                    <span className="filter-load-item-title">Create filter</span>
+                    <span className="filter-load-item-title">Create Filter</span>
                   </button>
                 </div>
               </div>
