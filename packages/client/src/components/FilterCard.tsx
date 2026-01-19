@@ -1106,7 +1106,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
       {/* Save Filter Modal */}
       {showSaveModal && (
         <div className="modal-overlay" onClick={() => setShowSaveModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content modal-content-small" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Save Filter</h2>
               <button

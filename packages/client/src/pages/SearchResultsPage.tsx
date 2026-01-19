@@ -1216,10 +1216,14 @@ function SearchResultsPage() {
                             }
                             className="column-checkbox"
                           />
-                          {(columnKey === 'name' ? visibleColumns.name :
-                            columnKey === 'sourceLocation' ? visibleColumns.sourceLocation :
-                            columnKey === 'uploadedAt' ? visibleColumns.uploadedAt :
-                            true) && <CheckIcon />}
+                          <span style={{
+                            visibility: (columnKey === 'name' ? visibleColumns.name :
+                              columnKey === 'sourceLocation' ? visibleColumns.sourceLocation :
+                              columnKey === 'uploadedAt' ? visibleColumns.uploadedAt :
+                              true) ? 'visible' : 'hidden'
+                          }}>
+                            <CheckIcon />
+                          </span>
                         </label>
                         <div className="column-info">
                           <div className="column-original-name">{originalName}</div>

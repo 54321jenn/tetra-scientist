@@ -542,15 +542,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem !important;
   border-bottom: 1px solid var(--border-color);
 }
 
 .modal-title {
-  font-size: 1.25rem;
+  font-size: 1.125rem !important;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0;
+  margin: 0 !important;
 }
 
 .modal-close {
@@ -570,7 +570,7 @@
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 1.5rem !important;
 }
 
 .modal-label {
@@ -602,7 +602,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 0.75rem;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem !important;
   border-top: 1px solid var(--border-color);
 }
 
