@@ -947,15 +947,16 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
     <div className="filter-card">
       <div className="filter-card-top-bar">
         <div className="filter-card-title-wrapper">
-          <div className="filter-load-dropdown-wrapper" ref={loadDropdownRef}>
-            <button
-              className="filter-title-dropdown-btn"
-              onClick={() => setShowLoadDropdown(!showLoadDropdown)}
-              disabled={savedFilters.length === 0}
-            >
-              <h2 className="filter-card-title">{currentFilterName}</h2>
-              {savedFilters.length > 0 && <ChevronDownIcon />}
-            </button>
+          {filterOrder.length > 0 && (
+            <div className="filter-load-dropdown-wrapper" ref={loadDropdownRef}>
+              <button
+                className="filter-title-dropdown-btn"
+                onClick={() => setShowLoadDropdown(!showLoadDropdown)}
+                disabled={savedFilters.length === 0}
+              >
+                <h2 className="filter-card-title">{currentFilterName}</h2>
+                {savedFilters.length > 0 && <ChevronDownIcon />}
+              </button>
             {showLoadDropdown && (
               <div className="filter-load-dropdown">
                 {savedFilters.map(filter => (
@@ -1013,7 +1014,8 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
                 </div>
               </div>
             )}
-          </div>
+            </div>
+          )}
           {filterOrder.length > 0 && (isModified || currentFilterName === 'Filters') && (
             <button
               className="filter-card-modified-icon"
@@ -1037,6 +1039,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
       <div className="filter-fields">
         {filterOrder.length === 0 ? (
           <div className="filter-empty-state">
+            <h2 className="filter-empty-title">Filters</h2>
             <p className="filter-empty-subtitle">Select a saved filter or create a new one</p>
 
             <div className="filter-empty-actions">
