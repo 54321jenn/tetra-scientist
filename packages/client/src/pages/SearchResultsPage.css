@@ -2,6 +2,27 @@
   padding: 2rem;
   background-color: var(--bg-primary);
   min-height: 100vh;
+  transition: margin-right 0.3s ease-in-out;
+}
+
+.search-results-page.assistant-open {
+  margin-right: 400px;
+}
+
+/* Hide button text when assistant is open */
+.search-results-page.assistant-open .search-filter-btn span,
+.search-results-page.assistant-open .search-ai-btn span {
+  display: none;
+}
+
+.search-results-page.assistant-open .search-filter-btn,
+.search-results-page.assistant-open .search-ai-btn {
+  padding: 0.5rem;
+}
+
+.search-results-page.assistant-open .search-filter-btn.active,
+.search-results-page.assistant-open .search-ai-btn.active {
+  padding: 0.5rem 0.75rem;
 }
 
 /* Search Bar */
@@ -1050,4 +1071,27 @@
 
 .modal-btn-save:hover {
   background: #1565C0;
+}
+
+/* AI Assistant Button Active State */
+.search-ai-btn.active {
+  background-color: #1976D2;
+  color: white;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+}
+
+.search-ai-btn.active:hover {
+  background-color: #1565C0;
+}
+
+.search-ai-btn.active svg {
+  color: white !important;
+}
+
+/* Responsive: Disable margin shift on smaller screens */
+@media (max-width: 768px) {
+  .search-results-page.assistant-open {
+    margin-right: 0;
+  }
 }

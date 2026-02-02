@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import FilterCard from '../components/FilterCard';
+import { useState, useRef, useEffect } from 'react';
+import FilterCard, { FilterCardRef } from '../components/FilterCard';
+import SearchAssistant from '../components/SearchAssistant';
 import './SearchPage.css';
 
 // Icon components
@@ -42,6 +43,47 @@ interface SearchItem {
 function SearchPage() {
   const navigate = useNavigate();
   const [showFilterView, setShowFilterView] = useState(false);
+  const [showAssistant, setShowAssistant] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [lastRemovedFilter, setLastRemovedFilter] = useState<string | null>(null);
+  const filterCardRef = useRef<FilterCardRef>(null);
+
+  // Poll for active filters when assistant is open
+  useEffect(() => {
+    if (!showAssistant) return;
+
+    const interval = setInterval(() => {
+      const filters = filterCardRef.current?.getActiveFilters() || [];
+      setActiveFilters(prev => {
+        if (JSON.stringify(prev) !== JSON.stringify(filters)) {
+          return filters;
+        }
+        return prev;
+      });
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [showAssistant]);
+
+  const handleAddFilter = (filterName: string) => {
+    // Map display names to filter keys
+    const filterMap: { [key: string]: string } = {
+      'File name': 'fileName',
+      'Created date': 'createdBetween',
+      'Instrument': 'instrument',
+      'Software': 'software',
+      'Tags': 'tags',
+      'File type': 'type',
+    };
+    const filterKey = filterMap[filterName] || filterName;
+    filterCardRef.current?.addFilter(filterKey);
+  };
+
+  const handleFilterRemoved = (filterName: string) => {
+    if (showAssistant) {
+      setLastRemovedFilter(filterName);
+    }
+  };
 
   const savedSearches: SearchItem[] = [
     {
@@ -80,7 +122,7 @@ function SearchPage() {
   ];
 
   return (
-    <div className="search-page">
+    <div className={`search-page ${showAssistant ? 'assistant-open' : ''}`}>
       <h1 className="search-title">Search</h1>
 
       <div className="search-bar-container">
@@ -99,20 +141,26 @@ function SearchPage() {
             <FilterIcon />
             <span>Filters</span>
           </button>
-          <button className="search-ai-btn" aria-label="AI Mode">
+          <button
+            className={`search-ai-btn ${showAssistant ? 'active' : ''}`}
+            onClick={() => setShowAssistant(!showAssistant)}
+            aria-label="AI Assistant"
+          >
             <SparklesIcon />
             <span>AI Assistant</span>
           </button>
         </div>
       </div>
 
-      <div className={`search-filter-view ${showFilterView ? 'visible' : ''}`}>
+      <div className={`search-filter-view ${showFilterView ? 'visible' : ''} ${showAssistant ? 'assistant-open' : ''}`}>
         <FilterCard
+          ref={filterCardRef}
           onClose={() => setShowFilterView(false)}
           onSearch={() => {
             setShowFilterView(false);
             navigate('/search-results');
           }}
+          onFilterRemoved={handleFilterRemoved}
         />
       </div>
 
@@ -163,6 +211,18 @@ function SearchPage() {
           </div>
         </div>
       </div>
+
+      <SearchAssistant
+        isOpen={showAssistant}
+        onClose={() => setShowAssistant(false)}
+        onBuildFilters={() => {
+          setShowFilterView(true);
+        }}
+        onAddFilter={handleAddFilter}
+        activeFilters={activeFilters}
+        lastRemovedFilter={lastRemovedFilter}
+        onFilterRemovalHandled={() => setLastRemovedFilter(null)}
+      />
     </div>
   );
 }

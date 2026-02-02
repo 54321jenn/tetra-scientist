@@ -1,9 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import './FilterCard.css';
 
 interface FilterCardProps {
   onClose: () => void;
   onSearch?: () => void;
+  onFilterRemoved?: (filterName: string) => void;
+}
+
+export interface FilterCardRef {
+  addFilter: (filterName: string) => void;
+  getActiveFilters: () => string[];
 }
 
 const CloseIcon = () => (
@@ -76,7 +82,7 @@ const SearchIcon = () => (
 
 
 
-function FilterCard({ onClose, onSearch }: FilterCardProps) {
+const FilterCard = forwardRef<FilterCardRef, FilterCardProps>(({ onClose, onSearch, onFilterRemoved }, ref) => {
   const [fileName, setFileName] = useState('');
   const [createdOn, setCreatedOn] = useState('');
   const [createdBetweenStart, setCreatedBetweenStart] = useState('');
@@ -346,6 +352,11 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
         setType('');
         break;
     }
+
+    // Notify parent that a filter was removed
+    if (onFilterRemoved) {
+      onFilterRemoved(filterName);
+    }
   };
 
   const addFilter = (filterName: string) => {
@@ -415,7 +426,20 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
       default:
         setFilterOrder(prev => [...prev, filterName]);
     }
+    // Ensure we're in creating mode when adding filters
+    if (!isCreatingNewFilter && filterOrder.length === 0) {
+      setIsCreatingNewFilter(true);
+      setCurrentFilterName('Create filter');
+    }
   };
+
+  // Expose addFilter and getActiveFilters to parent components via ref
+  useImperativeHandle(ref, () => ({
+    addFilter: (filterName: string) => {
+      addFilter(filterName);
+    },
+    getActiveFilters: () => filterOrder
+  }), [filterOrder]);
 
   const handleDragStart = (filterName: string) => {
     setDraggedFilter(filterName);
@@ -1414,7 +1438,7 @@ function FilterCard({ onClose, onSearch }: FilterCardProps) {
       )}
     </div>
   );
-}
+});
 
 export default FilterCard;
 

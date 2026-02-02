@@ -204,6 +204,13 @@
   }
 }
 
+/* Single column layout when assistant is open on smaller desktop screens */
+@media (max-width: 1200px) {
+  .assistant-open .filter-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .filter-field-group {
   display: flex;
   flex-direction: column;
