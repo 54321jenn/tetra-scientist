@@ -1,5 +1,5 @@
 import CustomTable, { TableColumn } from '../components/CustomTable';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import FilterCard, { FilterCardRef } from '../components/FilterCard';
 import SearchAssistant from '../components/SearchAssistant';
@@ -266,6 +266,66 @@ const searchResults: SearchResult[] = [
   },
 ];
 
+// Sample data for chromatography
+const chromatographyResults: SearchResult[] = [
+  {
+    id: 'c1',
+    name: 'HPLC-Run-2026-001.raw',
+    sourceLocation: '/tetrasphere/chromatography/hplc/runs',
+    uploadedAt: '01/08/2026 09:15:00 AM EST',
+    uploadedAtRelative: '2 days ago',
+    fileType: 'document',
+  },
+  {
+    id: 'c2',
+    name: 'HPLC-Run-2026-002.raw',
+    sourceLocation: '/tetrasphere/chromatography/hplc/runs',
+    uploadedAt: '01/08/2026 10:30:22 AM EST',
+    uploadedAtRelative: '2 days ago',
+    fileType: 'document',
+  },
+  {
+    id: 'c3',
+    name: 'LC-MS-Analysis-Batch42.raw',
+    sourceLocation: '/tetrasphere/chromatography/lc-ms/batch-42',
+    uploadedAt: '01/09/2026 02:45:00 PM EST',
+    uploadedAtRelative: 'Yesterday',
+    fileType: 'document',
+  },
+  {
+    id: 'c4',
+    name: 'GC-Separation-Sample-A.raw',
+    sourceLocation: '/tetrasphere/chromatography/gc/samples',
+    uploadedAt: '01/09/2026 03:20:15 PM EST',
+    uploadedAtRelative: 'Yesterday',
+    fileType: 'document',
+  },
+  {
+    id: 'c5',
+    name: 'GC-Separation-Sample-B.raw',
+    sourceLocation: '/tetrasphere/chromatography/gc/samples',
+    uploadedAt: '01/09/2026 03:45:33 PM EST',
+    uploadedAtRelative: 'Yesterday',
+    fileType: 'document',
+  },
+  {
+    id: 'c6',
+    name: 'Chromatography-Method-Validation.pdf',
+    sourceLocation: '/tetrasphere/chromatography/docs',
+    uploadedAt: '01/10/2026 08:00:00 AM EST',
+    uploadedAtRelative: 'Today',
+    fileType: 'document',
+  },
+  {
+    id: 'c7',
+    name: 'HPLC-Calibration-Data.csv',
+    sourceLocation: '/tetrasphere/chromatography/hplc/calibration',
+    uploadedAt: '01/10/2026 09:30:00 AM EST',
+    uploadedAtRelative: 'Today',
+    fileType: 'csv',
+  },
+];
+
 // File type icon components
 const DocumentIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -472,6 +532,7 @@ const CloseIcon = () => (
 
 function SearchResultsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -485,6 +546,18 @@ function SearchResultsPage() {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [lastRemovedFilter, setLastRemovedFilter] = useState<string | null>(null);
   const filterCardRef = useRef<FilterCardRef>(null);
+
+  // Get initial search type from navigation state
+  const initialSearchType = (location.state as { searchType?: 'proteomics' | 'chromatography' })?.searchType || 'proteomics';
+  const [currentSearchType, setCurrentSearchType] = useState<'proteomics' | 'chromatography'>(initialSearchType);
+  const [searchQuery, setSearchQuery] = useState(
+    initialSearchType === 'chromatography'
+      ? 'All chromatography data for the last 2 weeks'
+      : 'All data for proteomics study 3'
+  );
+
+  // Get current results based on search type
+  const currentResults = currentSearchType === 'chromatography' ? chromatographyResults : searchResults;
 
   // Poll for active filters when assistant is open
   useEffect(() => {
@@ -515,6 +588,10 @@ function SearchResultsPage() {
     };
     const filterKey = filterMap[filterName] || filterName;
     filterCardRef.current?.addFilter(filterKey);
+  };
+
+  const handleSetFilterValue = (filterName: string, value: string) => {
+    filterCardRef.current?.setFilterValue(filterName, value);
   };
 
   const handleFilterRemoved = (filterName: string) => {
@@ -550,7 +627,7 @@ function SearchResultsPage() {
       setSelectedRows(new Set());
       setSelectAll(false);
     } else {
-      const allIds = new Set(searchResults.map(r => r.id));
+      const allIds = new Set(currentResults.map(r => r.id));
       setSelectedRows(allIds);
       setSelectAll(true);
     }
@@ -564,7 +641,7 @@ function SearchResultsPage() {
       newSelected.add(id);
     }
     setSelectedRows(newSelected);
-    setSelectAll(newSelected.size === searchResults.length);
+    setSelectAll(newSelected.size === currentResults.length);
   };
 
   const hasSelection = selectedRows.size > 0;
@@ -747,7 +824,7 @@ function SearchResultsPage() {
   };
 
   // Add checkbox column to data
-  const dataWithCheckbox = searchResults.map(row => {
+  const dataWithCheckbox = currentResults.map(row => {
     const baseData = {
       ...row,
       checkbox: (
@@ -880,7 +957,7 @@ function SearchResultsPage() {
       };
 
       const values = sampleData[columnType] || ['—', '—', '—', '—', '—'];
-      const rowIndex = searchResults.indexOf(row);
+      const rowIndex = currentResults.indexOf(row);
       acc[key] = values[rowIndex % values.length];
 
       return acc;
@@ -962,15 +1039,16 @@ function SearchResultsPage() {
   };
 
   return (
-    <div className={`search-results-page ${showAssistant ? 'assistant-open' : ''}`}>
+    <div className="search-results-page">
       <div className="search-bar-container">
         <div className="search-bar">
           <SearchIcon />
           <input
             type="text"
-            placeholder="All data for proteomics study 3"
+            placeholder="Search your data..."
             className="search-input"
-            defaultValue="All data for proteomics study 3"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
           <button
             className={`search-filter-btn ${showFilterView ? 'active' : ''}`}
@@ -1457,9 +1535,29 @@ function SearchResultsPage() {
           setShowFilterView(true);
         }}
         onAddFilter={handleAddFilter}
+        onSetFilterValue={handleSetFilterValue}
         activeFilters={activeFilters}
         lastRemovedFilter={lastRemovedFilter}
         onFilterRemovalHandled={() => setLastRemovedFilter(null)}
+        onSearch={(searchType) => {
+          console.log('onSearch called with searchType:', searchType);
+          setShowFilterView(false);
+          setShowAssistant(false);
+          setSelectedRows(new Set());
+          setSelectAll(false);
+          if (searchType === 'chromatography') {
+            setCurrentSearchType('chromatography');
+            setSearchQuery('All chromatography data for the last 2 weeks');
+          } else if (searchType === 'proteomics') {
+            setCurrentSearchType('proteomics');
+            setSearchQuery('All data for proteomics study 3');
+          }
+          // If searchType is null, just close the panels (search with current filters)
+        }}
+        onSaveFilter={() => {
+          // TODO: Implement save filter modal/functionality
+          setToast({ message: 'Filter saved successfully', visible: true, fadeOut: false });
+        }}
       />
     </div>
   );

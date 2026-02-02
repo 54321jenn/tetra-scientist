@@ -10,6 +10,7 @@ interface FilterCardProps {
 export interface FilterCardRef {
   addFilter: (filterName: string) => void;
   getActiveFilters: () => string[];
+  setFilterValue: (filterName: string, value: string) => void;
 }
 
 const CloseIcon = () => (
@@ -403,6 +404,14 @@ const FilterCard = forwardRef<FilterCardRef, FilterCardProps>(({ onClose, onSear
         setCreatedBetweenEnd(lastWeekEnd.toISOString().split('T')[0]);
         setCreatedBetweenLabel('Created Last Week');
         break;
+      case 'last2Weeks':
+        const last2WeeksStart = new Date(today);
+        last2WeeksStart.setDate(today.getDate() - 14);
+        setFilterOrder(prev => [...prev, 'createdBetween']);
+        setCreatedBetweenStart(last2WeeksStart.toISOString().split('T')[0]);
+        setCreatedBetweenEnd(todayStr);
+        setCreatedBetweenLabel('Created Last 2 Weeks');
+        break;
       case 'lastMonth':
         const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
         const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
@@ -433,12 +442,35 @@ const FilterCard = forwardRef<FilterCardRef, FilterCardProps>(({ onClose, onSear
     }
   };
 
-  // Expose addFilter and getActiveFilters to parent components via ref
+  const setFilterValue = (filterName: string, value: string) => {
+    switch (filterName) {
+      case 'fileName':
+        setFileName(value);
+        break;
+      case 'instrument':
+        setInstrument(value);
+        break;
+      case 'software':
+        setSoftware(value);
+        break;
+      case 'tags':
+        setTags(value);
+        break;
+      case 'type':
+        setType(value);
+        break;
+    }
+  };
+
+  // Expose addFilter, getActiveFilters, and setFilterValue to parent components via ref
   useImperativeHandle(ref, () => ({
     addFilter: (filterName: string) => {
       addFilter(filterName);
     },
-    getActiveFilters: () => filterOrder
+    getActiveFilters: () => filterOrder,
+    setFilterValue: (filterName: string, value: string) => {
+      setFilterValue(filterName, value);
+    }
   }), [filterOrder]);
 
   const handleDragStart = (filterName: string) => {

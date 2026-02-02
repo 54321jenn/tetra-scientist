@@ -31,10 +31,19 @@ interface SearchAssistantProps {
   onClose: () => void;
   onBuildFilters?: () => void;
   onAddFilter?: (filterName: string) => void;
+  onSetFilterValue?: (filterName: string, value: string) => void;
   activeFilters?: string[];
   lastRemovedFilter?: string | null;
   onFilterRemovalHandled?: () => void;
+  onSearch?: (searchType: 'proteomics' | 'chromatography' | null) => void;
+  onSaveFilter?: () => void;
 }
+
+// Action pill constants
+const ACTION_PILLS = {
+  SEARCH: 'Search',
+  SAVE_FILTER: 'Save filter',
+};
 
 interface SuggestionPill {
   id: string;
@@ -81,11 +90,12 @@ const FILTER_KEY_TO_NAME: { [key: string]: string } = {
   'type': 'File type',
 };
 
-function SearchAssistant({ isOpen, onClose, onBuildFilters, onAddFilter, activeFilters = [], lastRemovedFilter, onFilterRemovalHandled }: SearchAssistantProps) {
+function SearchAssistant({ isOpen, onClose, onBuildFilters, onAddFilter, onSetFilterValue, activeFilters = [], lastRemovedFilter, onFilterRemovalHandled, onSearch, onSaveFilter }: SearchAssistantProps) {
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const [lastDetectedSearchType, setLastDetectedSearchType] = useState<'proteomics' | 'chromatography' | null>(null);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -158,6 +168,37 @@ function SearchAssistant({ isOpen, onClose, onBuildFilters, onAddFilter, activeF
   };
 
   const handleSuggestionClick = (suggestion: string) => {
+    // Handle action pills (Search, Save filter)
+    if (suggestion === ACTION_PILLS.SEARCH) {
+      console.log('Search clicked, lastDetectedSearchType:', lastDetectedSearchType);
+      console.log('onSearch is defined:', !!onSearch);
+      // Call onSearch - this will close the assistant and update results
+      if (onSearch) {
+        console.log('Calling onSearch now...');
+        onSearch(lastDetectedSearchType);
+        console.log('onSearch called');
+      }
+      return;
+    }
+
+    if (suggestion === ACTION_PILLS.SAVE_FILTER) {
+      if (onSaveFilter) {
+        onSaveFilter();
+      }
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        type: 'user',
+        content: suggestion,
+      };
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: 'Your filter has been saved! You can access it from your filter dropdown.',
+      };
+      setMessages(prev => [...prev, userMessage, assistantMessage]);
+      return;
+    }
+
     // Actually add the filter to the FilterCard
     if (onAddFilter) {
       onAddFilter(suggestion);
@@ -327,9 +368,114 @@ function SearchAssistant({ isOpen, onClose, onBuildFilters, onAddFilter, activeF
     },
   ];
 
+  const parseNaturalLanguageQuery = (query: string) => {
+    const lowerQuery = query.toLowerCase();
+    const filtersToAdd: string[] = [];
+    const valuesToSet: { filter: string; value: string }[] = [];
+    let responseMessage = '';
+    let detectedSearchType: 'proteomics' | 'chromatography' | null = null;
+
+    // Detect time ranges
+    if (lowerQuery.includes('last 2 weeks') || lowerQuery.includes('past 2 weeks') || lowerQuery.includes('two weeks')) {
+      filtersToAdd.push('last2Weeks');
+    } else if (lowerQuery.includes('last week') || lowerQuery.includes('past week')) {
+      filtersToAdd.push('lastWeek');
+    } else if (lowerQuery.includes('last month') || lowerQuery.includes('past month')) {
+      filtersToAdd.push('lastMonth');
+    } else if (lowerQuery.includes('this week')) {
+      filtersToAdd.push('thisWeek');
+    } else if (lowerQuery.includes('this month')) {
+      filtersToAdd.push('thisMonth');
+    } else if (lowerQuery.includes('today')) {
+      filtersToAdd.push('today');
+    }
+
+    // Detect data types / instruments
+    const dataTypes = [
+      { keywords: ['chromatography', 'hplc', 'gc', 'lc'], value: 'Chromatography', searchType: 'chromatography' as const },
+      { keywords: ['mass spec', 'mass spectrometry', 'ms'], value: 'Mass Spectrometry', searchType: null },
+      { keywords: ['proteomics', 'protein'], value: 'Proteomics', searchType: 'proteomics' as const },
+      { keywords: ['genomics', 'sequencing', 'ngs'], value: 'Genomics', searchType: null },
+      { keywords: ['nmr', 'nuclear magnetic'], value: 'NMR', searchType: null },
+    ];
+
+    for (const dataType of dataTypes) {
+      if (dataType.keywords.some(kw => lowerQuery.includes(kw))) {
+        filtersToAdd.push('tags');
+        valuesToSet.push({ filter: 'tags', value: dataType.value });
+        detectedSearchType = dataType.searchType;
+        break;
+      }
+    }
+
+    // Build response message
+    const addedItems: string[] = [];
+    if (filtersToAdd.some(f => ['last2Weeks', 'lastWeek', 'lastMonth', 'thisWeek', 'thisMonth', 'today'].includes(f))) {
+      addedItems.push('date range');
+    }
+    if (valuesToSet.length > 0) {
+      addedItems.push(`tag: ${valuesToSet[0].value}`);
+    }
+
+    if (addedItems.length > 0) {
+      responseMessage = `I've set up your search with ${addedItems.join(' and ')}. You can adjust the filters or click Search to see results.`;
+    } else {
+      responseMessage = "I'm not sure what filters to apply. Try asking something like \"show me all my chromatography data for the last 2 weeks\" or use the filter buttons above.";
+    }
+
+    return { filtersToAdd, valuesToSet, responseMessage, detectedSearchType };
+  };
+
   const handleSend = () => {
     if (inputValue.trim()) {
-      console.log('Sending message:', inputValue);
+      const query = inputValue.trim();
+
+      // Add user message
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        type: 'user',
+        content: query,
+      };
+
+      // Parse the query
+      const { filtersToAdd, valuesToSet, responseMessage, detectedSearchType } = parseNaturalLanguageQuery(query);
+
+      // Store the detected search type for when user clicks Search
+      console.log('Parsed query, detectedSearchType:', detectedSearchType);
+      setLastDetectedSearchType(detectedSearchType);
+
+      // Apply filters
+      if (filtersToAdd.length > 0 || valuesToSet.length > 0) {
+        // Open the filter view
+        if (onBuildFilters) {
+          onBuildFilters();
+        }
+
+        // Add filters
+        filtersToAdd.forEach(filterName => {
+          if (onAddFilter) {
+            onAddFilter(filterName);
+          }
+        });
+
+        // Set filter values
+        valuesToSet.forEach(({ filter, value }) => {
+          if (onSetFilterValue) {
+            onSetFilterValue(filter, value);
+          }
+        });
+      }
+
+      // Add assistant response with action pills if filters were applied
+      const hasFiltersApplied = filtersToAdd.length > 0 || valuesToSet.length > 0;
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: responseMessage,
+        suggestions: hasFiltersApplied ? [ACTION_PILLS.SEARCH, ACTION_PILLS.SAVE_FILTER] : undefined,
+      };
+
+      setMessages(prev => [...prev, userMessage, assistantMessage]);
       setInputValue('');
     }
   };

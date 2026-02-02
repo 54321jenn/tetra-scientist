@@ -79,6 +79,10 @@ function SearchPage() {
     filterCardRef.current?.addFilter(filterKey);
   };
 
+  const handleSetFilterValue = (filterName: string, value: string) => {
+    filterCardRef.current?.setFilterValue(filterName, value);
+  };
+
   const handleFilterRemoved = (filterName: string) => {
     if (showAssistant) {
       setLastRemovedFilter(filterName);
@@ -122,7 +126,7 @@ function SearchPage() {
   ];
 
   return (
-    <div className={`search-page ${showAssistant ? 'assistant-open' : ''}`}>
+    <div className="search-page">
       <h1 className="search-title">Search</h1>
 
       <div className="search-bar-container">
@@ -219,9 +223,19 @@ function SearchPage() {
           setShowFilterView(true);
         }}
         onAddFilter={handleAddFilter}
+        onSetFilterValue={handleSetFilterValue}
         activeFilters={activeFilters}
         lastRemovedFilter={lastRemovedFilter}
         onFilterRemovalHandled={() => setLastRemovedFilter(null)}
+        onSearch={(searchType) => {
+          // Navigate to search results with the detected search type
+          setShowAssistant(false);
+          navigate('/search-results', { state: { searchType } });
+        }}
+        onSaveFilter={() => {
+          // TODO: Implement save filter functionality
+          console.log('Save filter clicked');
+        }}
       />
     </div>
   );
