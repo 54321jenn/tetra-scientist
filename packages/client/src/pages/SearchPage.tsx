@@ -126,7 +126,7 @@ function SearchPage() {
   ];
 
   return (
-    <div className="search-page">
+    <div className={`search-page ${showAssistant ? 'assistant-open' : ''}`}>
       <h1 className="search-title">Search</h1>
 
       <div className="search-bar-container">
@@ -162,7 +162,7 @@ function SearchPage() {
           onClose={() => setShowFilterView(false)}
           onSearch={() => {
             setShowFilterView(false);
-            navigate('/search-results');
+            navigate('/search-results', { state: { assistantOpen: showAssistant } });
           }}
           onFilterRemoved={handleFilterRemoved}
         />
@@ -176,7 +176,7 @@ function SearchPage() {
               <div
                 key={index}
                 className="search-list-item"
-                onClick={() => navigate('/search-results')}
+                onClick={() => navigate('/search-results', { state: { assistantOpen: showAssistant } })}
                 style={{ cursor: 'pointer' }}
               >
                 <div className="search-item-icon">{item.icon}</div>
@@ -199,7 +199,7 @@ function SearchPage() {
               <div
                 key={index}
                 className="search-list-item"
-                onClick={() => navigate('/search-results')}
+                onClick={() => navigate('/search-results', { state: { assistantOpen: showAssistant } })}
                 style={{ cursor: 'pointer' }}
               >
                 <div className="search-item-icon">{item.icon}</div>
@@ -228,9 +228,8 @@ function SearchPage() {
         lastRemovedFilter={lastRemovedFilter}
         onFilterRemovalHandled={() => setLastRemovedFilter(null)}
         onSearch={(searchType) => {
-          // Navigate to search results with the detected search type
-          setShowAssistant(false);
-          navigate('/search-results', { state: { searchType } });
+          // Navigate to search results with the detected search type and keep assistant open
+          navigate('/search-results', { state: { searchType, assistantOpen: true } });
         }}
         onSaveFilter={() => {
           // TODO: Implement save filter functionality

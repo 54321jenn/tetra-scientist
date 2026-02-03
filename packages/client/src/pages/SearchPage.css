@@ -116,7 +116,10 @@
   gap: 2rem;
 }
 
-
+/* When assistant is open, stack sections vertically on smaller screens */
+.search-page.assistant-open .search-sections {
+  grid-template-columns: 1fr;
+}
 
 /* Search Section */
 .search-section {

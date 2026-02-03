@@ -542,7 +542,11 @@ function SearchResultsPage() {
   const [showInfo, setShowInfo] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showFilterView, setShowFilterView] = useState(false);
-  const [showAssistant, setShowAssistant] = useState(false);
+
+  // Get initial assistant state from navigation
+  const initialAssistantOpen = (location.state as { assistantOpen?: boolean })?.assistantOpen || false;
+  const [showAssistant, setShowAssistant] = useState(initialAssistantOpen);
+
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [lastRemovedFilter, setLastRemovedFilter] = useState<string | null>(null);
   const filterCardRef = useRef<FilterCardRef>(null);
@@ -1035,7 +1039,9 @@ function SearchResultsPage() {
 
   // Handle row click to navigate to details page
   const handleRowClick = (row: typeof dataWithCheckbox[0]) => {
-    navigate(`/details/${row.id}`);
+    // Find the original data item (without the added UI properties)
+    const originalData = currentResults.find(r => r.id === row.id);
+    navigate(`/details/${row.id}`, { state: { data: originalData } });
   };
 
   return (
@@ -1073,7 +1079,16 @@ function SearchResultsPage() {
         <FilterCard
           ref={filterCardRef}
           onClose={() => setShowFilterView(false)}
-          onSearch={() => setShowFilterView(false)}
+          onSearch={(searchType) => {
+            setShowFilterView(false);
+            if (searchType === 'chromatography') {
+              setCurrentSearchType('chromatography');
+              setSearchQuery('All chromatography data for the last 2 weeks');
+            } else if (searchType === 'proteomics') {
+              setCurrentSearchType('proteomics');
+              setSearchQuery('All data for proteomics study 3');
+            }
+          }}
           onFilterRemoved={handleFilterRemoved}
         />
       </div>
@@ -1542,7 +1557,6 @@ function SearchResultsPage() {
         onSearch={(searchType) => {
           console.log('onSearch called with searchType:', searchType);
           setShowFilterView(false);
-          setShowAssistant(false);
           setSelectedRows(new Set());
           setSelectAll(false);
           if (searchType === 'chromatography') {
@@ -1552,7 +1566,7 @@ function SearchResultsPage() {
             setCurrentSearchType('proteomics');
             setSearchQuery('All data for proteomics study 3');
           }
-          // If searchType is null, just close the panels (search with current filters)
+          // If searchType is null, just close the filter panel (search with current filters)
         }}
         onSaveFilter={() => {
           // TODO: Implement save filter modal/functionality

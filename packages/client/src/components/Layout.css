@@ -92,6 +92,13 @@
   flex: 1;
   padding: 1rem 2rem 2rem 2rem;
   min-height: 0;
+  transition: margin-right 0.3s ease-in-out;
+}
+
+/* When assistant is open, reduce available width to keep content centered */
+.main-content:has(.assistant-open) .page-content,
+.main-content:has(.search-assistant.open) .page-content {
+  margin-right: 400px; /* Width of assistant panel */
 }
 
 /* When assistant is open, push toolbar content left */
@@ -102,6 +109,11 @@
 }
 
 @media (max-width: 900px) {
+  .main-content:has(.assistant-open) .page-content,
+  .main-content:has(.search-assistant.open) .page-content {
+    margin-right: 0;
+  }
+
   .main-content:has(.assistant-open) .toolbar-content,
   .main-content:has(.search-assistant.open) .toolbar-content {
     margin-right: 0;
