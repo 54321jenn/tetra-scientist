@@ -3,7 +3,7 @@ import './FilterCard.css';
 
 interface FilterCardProps {
   onClose: () => void;
-  onSearch?: () => void;
+  onSearch?: (searchType?: 'proteomics' | 'chromatography' | null) => void;
   onFilterRemoved?: (filterName: string) => void;
 }
 
@@ -111,7 +111,7 @@ const FilterCard = forwardRef<FilterCardRef, FilterCardProps>(({ onClose, onSear
   const [currentFilterName, setCurrentFilterName] = useState<string>('Filters');
   const [isModified, setIsModified] = useState(false);
   const [savedState, setSavedState] = useState<{order: string[], values: any} | null>(null);
-  const [toast, setToast] = useState<{message: string, visible: boolean, fadeOut: boolean}>({message: '', visible: false, fadeOut: false});
+  const [toast, setToast] = useState<{message: string, visible: boolean, fadeOut: boolean, linkText?: string, onLinkClick?: () => void}>({message: '', visible: false, fadeOut: false});
   const [isCreatingNewFilter, setIsCreatingNewFilter] = useState(false);
   const loadDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -313,7 +313,17 @@ const FilterCard = forwardRef<FilterCardRef, FilterCardProps>(({ onClose, onSear
 
   const handleSearch = () => {
     if (onSearch) {
-      onSearch();
+      // Detect search type based on tags filter
+      let searchType: 'proteomics' | 'chromatography' | null = null;
+      if (tags) {
+        const lowerTags = tags.toLowerCase();
+        if (lowerTags.includes('chromatography') || lowerTags.includes('hplc') || lowerTags.includes('gc') || lowerTags.includes('lc')) {
+          searchType = 'chromatography';
+        } else if (lowerTags.includes('proteomics') || lowerTags.includes('protein')) {
+          searchType = 'proteomics';
+        }
+      }
+      onSearch(searchType);
     }
   };
 
@@ -602,7 +612,7 @@ const FilterCard = forwardRef<FilterCardRef, FilterCardProps>(({ onClose, onSear
         return;
       }
       updatedFilters = [...savedFilters, filterData];
-      message = `"${newName}" saved`;
+      message = `"${newName}" saved. You can access it `;
     }
 
     setSavedFilters(updatedFilters);
@@ -637,7 +647,22 @@ const FilterCard = forwardRef<FilterCardRef, FilterCardProps>(({ onClose, onSear
     setIsModified(false);
 
     handleCloseSaveModal();
-    setToast({message, visible: true, fadeOut: false});
+
+    // For new filters, show a link to the dropdown
+    if (!editingFilter) {
+      setToast({
+        message,
+        visible: true,
+        fadeOut: false,
+        linkText: 'here',
+        onLinkClick: () => {
+          setShowLoadDropdown(true);
+          setToast({message: '', visible: false, fadeOut: false});
+        }
+      });
+    } else {
+      setToast({message, visible: true, fadeOut: false});
+    }
   };
 
   const handleDeleteFilter = (filterNameToDelete: string) => {
@@ -1432,6 +1457,18 @@ const FilterCard = forwardRef<FilterCardRef, FilterCardProps>(({ onClose, onSear
       {toast.visible && (
         <div className={`filter-toast ${toast.fadeOut ? 'fade-out' : ''}`}>
           {toast.message}
+          {toast.linkText && toast.onLinkClick && (
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                toast.onLinkClick?.();
+              }}
+              style={{ color: 'var(--primary-color)', textDecoration: 'underline', marginLeft: '0' }}
+            >
+              {toast.linkText}
+            </a>
+          )}
         </div>
       )}
 

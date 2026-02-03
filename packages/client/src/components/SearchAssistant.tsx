@@ -92,10 +92,25 @@ const FILTER_KEY_TO_NAME: { [key: string]: string } = {
 
 function SearchAssistant({ isOpen, onClose, onBuildFilters, onAddFilter, onSetFilterValue, activeFilters = [], lastRemovedFilter, onFilterRemovalHandled, onSearch, onSaveFilter }: SearchAssistantProps) {
   const [inputValue, setInputValue] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
+
+  // Load messages from localStorage on mount
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try {
+      const saved = localStorage.getItem('searchAssistantMessages');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const [lastDetectedSearchType, setLastDetectedSearchType] = useState<'proteomics' | 'chromatography' | null>(null);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('searchAssistantMessages', JSON.stringify(messages));
+  }, [messages]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -139,6 +154,7 @@ function SearchAssistant({ isOpen, onClose, onBuildFilters, onAddFilter, onSetFi
 
   const handleNewChat = () => {
     setMessages([]);
+    localStorage.removeItem('searchAssistantMessages');
   };
 
   const handleBuildFilters = () => {
@@ -193,7 +209,7 @@ function SearchAssistant({ isOpen, onClose, onBuildFilters, onAddFilter, onSetFi
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: 'Your filter has been saved! You can access it from your filter dropdown.',
+        content: 'Your filter has been saved!',
       };
       setMessages(prev => [...prev, userMessage, assistantMessage]);
       return;
@@ -480,7 +496,7 @@ function SearchAssistant({ isOpen, onClose, onBuildFilters, onAddFilter, onSetFi
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -629,7 +645,7 @@ function SearchAssistant({ isOpen, onClose, onBuildFilters, onAddFilter, onSetFi
             placeholder="Ask me anything..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
           />
           <button
             className="search-assistant-send"
