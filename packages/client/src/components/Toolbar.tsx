@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import './Toolbar.css';
+import { useUserMode } from '../contexts/UserModeContext';
 
 const pageTitles: Record<string, string> = {
   '/': 'Tetra Data Platform',
@@ -17,6 +18,7 @@ interface ToolbarProps {
 
 function Toolbar({ isSidebarCollapsed, onToggleSidebar }: ToolbarProps) {
   const location = useLocation();
+  const { userMode, toggleUserMode } = useUserMode();
 
   // Get the page title, checking for dynamic routes
   let title = pageTitles[location.pathname];
@@ -151,6 +153,19 @@ function Toolbar({ isSidebarCollapsed, onToggleSidebar }: ToolbarProps) {
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
                   My Account
+                </button>
+                <div className="account-dropdown-divider"></div>
+                <button className="account-dropdown-item" onClick={() => {
+                  toggleUserMode();
+                  setIsAccountDropdownOpen(false);
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  Switch to {userMode === 'scientist' ? 'IT' : 'Scientist'} Mode
                 </button>
                 <div className="account-dropdown-divider"></div>
                 <button className="account-dropdown-item" onClick={() => console.log('Logout clicked')}>
