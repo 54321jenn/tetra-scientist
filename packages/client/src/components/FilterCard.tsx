@@ -164,10 +164,8 @@ const FilterCard = forwardRef<FilterCardRef, FilterCardProps>(({ onClose, onSear
         });
         setIsModified(false);
 
-        // Clean up the URL by removing the filter parameter
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.delete('filter');
-        window.history.replaceState({}, '', newUrl.toString());
+        // Note: We don't clean up the URL to preserve browser history functionality
+        // The filter parameter will remain in the URL but won't interfere with normal operation
 
         // Show a toast notification
         setToast({message: `Loaded shared filter: "${filterState.name || 'Shared Filter'}"`, visible: true, fadeOut: false});
