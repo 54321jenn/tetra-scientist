@@ -1,8 +1,15 @@
+import { useNavigate } from 'react-router-dom';
 import { useUserMode } from '../contexts/UserModeContext';
 import './PersonaSelectPage.css';
 
 function PersonaSelectPage() {
   const { setUserMode } = useUserMode();
+  const navigate = useNavigate();
+
+  const handlePersonaSelect = (mode: 'scientist' | 'it') => {
+    setUserMode(mode);
+    navigate(mode === 'it' ? '/it' : '/');
+  };
 
   return (
     <div className="persona-select-page">
@@ -12,9 +19,9 @@ function PersonaSelectPage() {
         <p className="persona-subtitle">Choose how you'd like to interact with the platform</p>
         
         <div className="persona-cards">
-          <button 
+          <button
             className="persona-card"
-            onClick={() => setUserMode('scientist')}
+            onClick={() => handlePersonaSelect('scientist')}
           >
             <div className="persona-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -29,9 +36,9 @@ function PersonaSelectPage() {
             </p>
           </button>
 
-          <button 
+          <button
             className="persona-card"
-            onClick={() => setUserMode('it')}
+            onClick={() => handlePersonaSelect('it')}
           >
             <div className="persona-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

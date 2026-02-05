@@ -15,35 +15,36 @@ import PersonaSelectPage from './pages/PersonaSelectPage';
 function AppRoutes() {
   const { userMode } = useUserMode();
 
-  // Show persona selection if no mode selected
-  if (userMode === null) {
-    return <PersonaSelectPage />;
-  }
+  return (
+    <Routes>
+      {/* Persona selection route */}
+      <Route path="/select-persona" element={<PersonaSelectPage />} />
 
-  // Redirect based on user mode
-  if (userMode === 'it') {
-    return (
-      <Routes>
+      {/* IT Admin routes */}
+      {userMode === 'it' && (
         <Route path="/it" element={<ITAdminLayout />}>
           <Route index element={<ITSearchPage />} />
         </Route>
-        <Route path="*" element={<Navigate to="/it" replace />} />
-      </Routes>
-    );
-  }
+      )}
 
-  // Scientist mode
-  return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<HomePage />} />
-        <Route path="data-table" element={<DataTablePage />} />
-        <Route path="search" element={<SearchPage />} />
-        <Route path="search-results" element={<SearchResultsPage />} />
-        <Route path="details/:id" element={<FileDetailsPage />} />
-        <Route path="apps" element={<AppsPage />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Scientist routes */}
+      {userMode === 'scientist' && (
+        <Route path="/" element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="data-table" element={<DataTablePage />} />
+          <Route path="search" element={<SearchPage />} />
+          <Route path="search-results" element={<SearchResultsPage />} />
+          <Route path="details/:id" element={<FileDetailsPage />} />
+          <Route path="apps" element={<AppsPage />} />
+        </Route>
+      )}
+
+      {/* Default redirects based on user mode */}
+      <Route path="*" element={
+        userMode === null ? <Navigate to="/select-persona" replace /> :
+        userMode === 'it' ? <Navigate to="/it" replace /> :
+        <Navigate to="/" replace />
+      } />
     </Routes>
   );
 }
