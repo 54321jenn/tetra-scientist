@@ -4,7 +4,7 @@ import './Toolbar.css';
 import { useUserMode } from '../contexts/UserModeContext';
 
 const pageTitles: Record<string, string> = {
-  '/': 'Tetra Data Platform',
+  '/': 'Home',
   '/data-table': 'My Data',
   '/search': 'Search',
   '/search-results': 'Search Results',
