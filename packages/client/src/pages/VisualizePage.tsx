@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useToolbar } from '../contexts/ToolbarContext';
 import './VisualizePage.css';
 
 // Icon components
@@ -60,6 +61,21 @@ const TableIcon = () => (
   </svg>
 );
 
+const CloseIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
+
+const ChartIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="20" x2="18" y2="10"></line>
+    <line x1="12" y1="20" x2="12" y2="4"></line>
+    <line x1="6" y1="20" x2="6" y2="14"></line>
+  </svg>
+);
+
 interface Message {
   id: string;
   type: 'user' | 'assistant';
@@ -75,6 +91,7 @@ interface DataSource {
 }
 
 function VisualizePage() {
+  const { setRightActions } = useToolbar();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -86,6 +103,7 @@ function VisualizePage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showDataPanel, setShowDataPanel] = useState(false);
   const [currentVisualization, setCurrentVisualization] = useState<'bar' | 'line' | 'scatter' | 'pie' | null>(null);
+  const [showVizSidesheet, setShowVizSidesheet] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -102,6 +120,23 @@ function VisualizePage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Set toolbar actions for the breadcrumb bar
+  useEffect(() => {
+    setRightActions(
+      <button
+        className="toolbar-chart-btn"
+        onClick={() => setShowVizSidesheet(!showVizSidesheet)}
+        disabled={!currentVisualization}
+        title={showVizSidesheet ? 'Hide chart' : 'Show chart'}
+      >
+        <ChartIcon />
+        <span>{showVizSidesheet ? 'Hide Chart' : 'Show Chart'}</span>
+      </button>
+    );
+
+    return () => setRightActions(null);
+  }, [setRightActions, currentVisualization, showVizSidesheet]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,6 +165,7 @@ function VisualizePage() {
           visualization: 'bar',
         };
         setCurrentVisualization('bar');
+        setShowVizSidesheet(true);
       } else if (lowerInput.includes('line') || lowerInput.includes('time') || lowerInput.includes('trend')) {
         response = {
           id: (Date.now() + 1).toString(),
@@ -138,6 +174,7 @@ function VisualizePage() {
           visualization: 'line',
         };
         setCurrentVisualization('line');
+        setShowVizSidesheet(true);
       } else if (lowerInput.includes('scatter') || lowerInput.includes('correlation') || lowerInput.includes('relationship')) {
         response = {
           id: (Date.now() + 1).toString(),
@@ -146,6 +183,7 @@ function VisualizePage() {
           visualization: 'scatter',
         };
         setCurrentVisualization('scatter');
+        setShowVizSidesheet(true);
       } else if (lowerInput.includes('pie') || lowerInput.includes('proportion') || lowerInput.includes('percentage') || lowerInput.includes('distribution')) {
         response = {
           id: (Date.now() + 1).toString(),
@@ -154,6 +192,7 @@ function VisualizePage() {
           visualization: 'pie',
         };
         setCurrentVisualization('pie');
+        setShowVizSidesheet(true);
       } else if (lowerInput.includes('recommend') || lowerInput.includes('best') || lowerInput.includes('suggest') || lowerInput.includes('how should')) {
         response = {
           id: (Date.now() + 1).toString(),
@@ -285,12 +324,7 @@ function VisualizePage() {
   };
 
   return (
-    <div className="visualize-page">
-      <div className="visualize-header">
-        <h1 className="visualize-title">Visualize Data</h1>
-        <p className="visualize-subtitle">Describe what you want to visualize using natural language</p>
-      </div>
-
+    <div className={`visualize-page ${showVizSidesheet ? 'sidesheet-open' : ''}`}>
       <div className="visualize-content">
         <div className="chat-panel">
           <div className="messages-container">
@@ -385,20 +419,30 @@ function VisualizePage() {
         )}
       </div>
 
-      {currentVisualization && (
-        <div className="current-viz-panel">
-          <div className="current-viz-header">
-            <h3>Current Visualization</h3>
+      {/* Visualization Sidesheet - Push State */}
+      <div className={`current-viz-panel ${showVizSidesheet ? 'open' : ''}`}>
+        <div className="current-viz-header">
+          <h3>Current Visualization</h3>
+          <div className="current-viz-header-actions">
             <div className="viz-toolbar">
               <button className="viz-action-btn" title="Share"><ShareIcon /></button>
               <button className="viz-action-btn" title="Copy"><CopyIcon /></button>
               <button className="viz-action-btn" title="Export"><DownloadIcon /></button>
               <button className="viz-action-btn primary" title="Send to ELN"><NotebookIcon /></button>
             </div>
+            <button
+              className="close-viz-btn"
+              onClick={() => setShowVizSidesheet(false)}
+              aria-label="Close visualization"
+            >
+              <CloseIcon />
+            </button>
           </div>
-          {renderVisualization(currentVisualization)}
         </div>
-      )}
+        <div className="current-viz-content">
+          {currentVisualization && renderVisualization(currentVisualization)}
+        </div>
+      </div>
     </div>
   );
 }
