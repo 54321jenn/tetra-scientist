@@ -11,7 +11,7 @@ interface SearchResult {
   sourceLocation: string;
   uploadedAt: string;
   uploadedAtRelative: string;
-  fileType: 'document' | 'zip' | 'csv';
+  fileType: 'document' | 'zip' | 'csv' | 'xlsx' | 'xls';
   content?: string;
 }
 
@@ -264,6 +264,14 @@ const searchResults: SearchResult[] = [
     uploadedAtRelative: 'Today',
     fileType: 'csv',
   },
+  {
+    id: '9',
+    name: 'Pipeline-Executions-Report.xlsx',
+    sourceLocation: '/tetrasphere/analytics/reports',
+    uploadedAt: '02/11/2026 10:15:00 AM EST',
+    uploadedAtRelative: 'Today',
+    fileType: 'xlsx',
+  },
 ];
 
 // Sample data for chromatography
@@ -353,6 +361,16 @@ const CsvIcon = () => (
   </svg>
 );
 
+const ExcelIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#217346" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="8" y1="13" x2="16" y2="13"></line>
+    <line x1="8" y1="17" x2="16" y2="17"></line>
+    <line x1="12" y1="9" x2="12" y2="21"></line>
+  </svg>
+);
+
 const getFileIcon = (fileType: string) => {
   switch (fileType) {
     case 'document':
@@ -361,6 +379,9 @@ const getFileIcon = (fileType: string) => {
       return <ZipIcon />;
     case 'csv':
       return <CsvIcon />;
+    case 'xlsx':
+    case 'xls':
+      return <ExcelIcon />;
     default:
       return <DocumentIcon />;
   }

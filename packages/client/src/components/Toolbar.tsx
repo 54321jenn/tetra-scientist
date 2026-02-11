@@ -9,6 +9,7 @@ const pageTitles: Record<string, string> = {
   '/search': 'Search',
   '/search-results': 'Search Results',
   '/apps': 'Apps',
+  '/visualize': 'Visualize Data',
 };
 
 interface ToolbarProps {

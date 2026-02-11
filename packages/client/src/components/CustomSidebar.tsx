@@ -53,6 +53,11 @@ const iconMap: Record<string, JSX.Element> = {
       <path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z" />
     </svg>
   ),
+  chart: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M3 13h2v8H3v-8zm6-6h2v14H9V7zm6 3h2v11h-2V10zm6-7h2v18h-2V3z" />
+    </svg>
+  ),
 };
 
 function CustomSidebar({ items, isCollapsed = false }: CustomSidebarProps) {

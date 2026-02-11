@@ -9,6 +9,7 @@ import SearchPage from './pages/SearchPage';
 import SearchResultsPage from './pages/SearchResultsPage';
 import FileDetailsPage from './pages/FileDetailsPage';
 import AppsPage from './pages/AppsPage';
+import VisualizePage from './pages/VisualizePage';
 import ITSearchPage from './pages/ITSearchPage';
 import PersonaSelectPage from './pages/PersonaSelectPage';
 
@@ -36,6 +37,7 @@ function AppRoutes() {
           <Route path="search-results" element={<SearchResultsPage />} />
           <Route path="details/:id" element={<FileDetailsPage />} />
           <Route path="apps" element={<AppsPage />} />
+          <Route path="visualize" element={<VisualizePage />} />
         </Route>
       )}
 

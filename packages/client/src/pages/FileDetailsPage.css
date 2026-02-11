@@ -378,3 +378,76 @@
   color: var(--text-secondary);
 }
 
+/* Spreadsheet Layout */
+.spreadsheet-layout {
+  display: flex;
+  gap: 0;
+  height: calc(100vh - 200px);
+  min-height: 500px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.spreadsheet-preview-container {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.file-assistant-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 400px;
+  background-color: var(--bg-primary);
+  border-left: 1px solid var(--border-color);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+}
+
+/* Responsive adjustments for spreadsheet layout */
+@media (max-width: 1200px) {
+  .spreadsheet-layout {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .spreadsheet-preview-container {
+    height: 400px;
+  }
+}
+
+/* Responsive adjustments for file assistant */
+@media (max-width: 768px) {
+  .file-assistant-container {
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+/* Document Layout with AI Assistant */
+.document-layout {
+  display: flex;
+  gap: 0;
+  height: calc(100vh - 200px);
+  min-height: 500px;
+}
+
+.document-layout .preview-content {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+
+.document-layout.with-assistant .preview-content {
+  border-right: 1px solid var(--border-color);
+}
+
+/* Active state for AI Assistant button */
+.preview-action-btn.active {
+  background-color: #E3F2FD;
+  color: #1976D2;
+  border-color: #1976D2;
+}
