@@ -13,6 +13,7 @@ const routeLabels: Record<string, string> = {
   'apps': 'Apps',
   'ui-components': 'UI Components',
   'details': 'Details',
+  'visualize': 'Visualize Data',
 };
 
 // Special breadcrumb paths for routes that need custom parent paths

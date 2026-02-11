@@ -28,6 +28,11 @@ const sidebarItems = [
     label: 'Apps',
     path: '/apps',
   },
+  {
+    icon: 'chart',
+    label: 'Visualize Data',
+    path: '/visualize',
+  },
 ];
 
 function Layout() {
