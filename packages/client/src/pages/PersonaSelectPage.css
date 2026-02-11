@@ -12,7 +12,7 @@
 }
 
 .persona-logo {
-  width: 180px;
+  width: 280px;
   margin-bottom: 2rem;
 }
 
@@ -40,7 +40,7 @@
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 2rem;
-  width: 240px;
+  width: 320px;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
@@ -81,5 +81,6 @@
   color: #64748b;
   margin: 0;
   line-height: 1.5;
+  text-wrap: balance;
 }
 

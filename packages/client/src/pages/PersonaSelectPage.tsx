@@ -15,9 +15,9 @@ function PersonaSelectPage() {
     <div className="persona-select-page">
       <div className="persona-select-container">
         <img src="/logo.svg" alt="TetraScience" className="persona-logo" />
-        <h1 className="persona-title">Select Your Experience</h1>
-        <p className="persona-subtitle">Choose how you'd like to interact with the platform</p>
-        
+        <h1 className="persona-title">Choose Your Workspace</h1>
+        <p className="persona-subtitle">What do you want to do today?</p>
+
         <div className="persona-cards">
           <button
             className="persona-card"
@@ -30,9 +30,9 @@ function PersonaSelectPage() {
                 <path d="M10 12h4"></path>
               </svg>
             </div>
-            <h2 className="persona-card-title">Scientist</h2>
+            <h2 className="persona-card-title">Work With Scientific Data</h2>
             <p className="persona-card-description">
-              Access data, run searches, and explore scientific workflows
+              Search, explore and analyze scientific data
             </p>
           </button>
 
@@ -46,9 +46,9 @@ function PersonaSelectPage() {
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
               </svg>
             </div>
-            <h2 className="persona-card-title">IT</h2>
+            <h2 className="persona-card-title">Build and Manage</h2>
             <p className="persona-card-description">
-              Manage platform settings, users, and system configuration
+              Manage platform settings, users and system configuration
             </p>
           </button>
         </div>
