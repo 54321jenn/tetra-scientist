@@ -340,7 +340,7 @@ function FileDetailsPage() {
                     <SpreadsheetViewer data={spreadsheetData} fileName={fileData.name} />
                   </div>
                   <div className="file-assistant-container">
-                    <FileAssistant spreadsheetData={spreadsheetData} fileName={fileData.name} />
+                    <FileAssistant spreadsheetData={spreadsheetData} fileName={fileData.name} onClose={() => setShowAIAssistant(false)} />
                   </div>
                 </div>
               ) : (

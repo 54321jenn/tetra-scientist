@@ -279,7 +279,7 @@ const FileAssistant: React.FC<FileAssistantProps> = ({ spreadsheetData, fileName
           <h2>AI Assistant</h2>
         </div>
         {onClose && (
-          <button className="file-assistant-close-btn" onClick={onClose}>
+          <button className="file-assistant-close-btn" onClick={onClose} aria-label="Close">
             <CloseIcon />
           </button>
         )}
