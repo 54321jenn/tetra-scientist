@@ -170,7 +170,7 @@ function SearchPage() {
 
       <div className="search-sections">
         <div className="search-section">
-          <h3 className="search-section-title">Saved Searches</h3>
+          <h3 className="search-section-title">Saved searches</h3>
           <div className="search-list">
             {savedSearches.map((item, index) => (
               <div
@@ -193,7 +193,7 @@ function SearchPage() {
         </div>
 
         <div className="search-section">
-          <h3 className="search-section-title">Recent Searches</h3>
+          <h3 className="search-section-title">Recent searches</h3>
           <div className="search-list">
             {recentSearches.map((item, index) => (
               <div

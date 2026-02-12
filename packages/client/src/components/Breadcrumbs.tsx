@@ -7,13 +7,13 @@ interface BreadcrumbItem {
 }
 
 const routeLabels: Record<string, string> = {
-  'data-table': 'My Data',
+  'data-table': 'My data',
   'search': 'Search',
   'search-results': 'Search',
   'apps': 'Apps',
-  'ui-components': 'UI Components',
+  'ui-components': 'UI components',
   'details': 'Details',
-  'visualize': 'Visualize Data',
+  'visualize': 'Visualize data',
 };
 
 // Special breadcrumb paths for routes that need custom parent paths

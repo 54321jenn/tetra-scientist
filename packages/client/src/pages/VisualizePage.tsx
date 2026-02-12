@@ -131,7 +131,7 @@ function VisualizePage() {
         title={showVizSidesheet ? 'Hide chart' : 'Show chart'}
       >
         <ChartIcon />
-        <span>{showVizSidesheet ? 'Hide Chart' : 'Show Chart'}</span>
+        <span>{showVizSidesheet ? 'Hide chart' : 'Show chart'}</span>
       </button>
     );
 
@@ -358,7 +358,7 @@ function VisualizePage() {
                   )}
                   {message.dataPreview && (
                     <button className="view-data-btn" onClick={() => setShowDataPanel(true)}>
-                      <TableIcon /> View Data Sources
+                      <TableIcon /> View data sources
                     </button>
                   )}
                 </div>
@@ -398,7 +398,7 @@ function VisualizePage() {
         {showDataPanel && (
           <div className="data-panel">
             <div className="data-panel-header">
-              <h3>Data Sources</h3>
+              <h3>Data sources</h3>
               <button className="close-panel-btn" onClick={() => setShowDataPanel(false)}>×</button>
             </div>
             <div className="data-sources-list">
@@ -422,7 +422,7 @@ function VisualizePage() {
       {/* Visualization Sidesheet - Push State */}
       <div className={`current-viz-panel ${showVizSidesheet ? 'open' : ''}`}>
         <div className="current-viz-header">
-          <h3>Current Visualization</h3>
+          <h3>Current visualization</h3>
           <div className="current-viz-header-actions">
             <div className="viz-toolbar">
               <button className="viz-action-btn" title="Share"><ShareIcon /></button>

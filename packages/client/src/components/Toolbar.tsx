@@ -5,11 +5,11 @@ import { useUserMode } from '../contexts/UserModeContext';
 
 const pageTitles: Record<string, string> = {
   '/': 'Home',
-  '/data-table': 'My Data',
+  '/data-table': 'My data',
   '/search': 'Search',
-  '/search-results': 'Search Results',
+  '/search-results': 'Search results',
   '/apps': 'Apps',
-  '/visualize': 'Visualize Data',
+  '/visualize': 'Visualize data',
 };
 
 interface ToolbarProps {

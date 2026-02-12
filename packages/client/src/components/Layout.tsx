@@ -16,7 +16,7 @@ const sidebarItems = [
   },
   {
     icon: 'database',
-    label: 'My Data',
+    label: 'My data',
     path: '/data-table',
   },
   {
@@ -31,7 +31,7 @@ const sidebarItems = [
   },
   {
     icon: 'chart',
-    label: 'Visualize Data',
+    label: 'Visualize data',
     path: '/visualize',
   },
 ];

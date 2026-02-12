@@ -117,7 +117,7 @@ function ITAdminHomePage() {
           </div>
         ))}
       </div>
-      <Link to={viewAllLink} className="it-view-all-link">VIEW ALL</Link>
+      <Link to={viewAllLink} className="it-view-all-link">View all</Link>
     </div>
   );
 
@@ -126,9 +126,9 @@ function ITAdminHomePage() {
       <h1 className="it-welcome-title">Welcome, Marie Curie!</h1>
 
       <div className="it-home-sections">
-        {renderSection('Recommend Apps', recommendedApps, '/it/apps')}
-        {renderSection('Saved Searches', savedSearches, '/it/search')}
-        {renderSection('Recent Data', recentData, '/it/my-data')}
+        {renderSection('Recommended apps', recommendedApps, '/it/apps')}
+        {renderSection('Saved searches', savedSearches, '/it/search')}
+        {renderSection('Recent data', recentData, '/it/my-data')}
       </div>
     </div>
   );

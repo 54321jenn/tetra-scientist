@@ -1116,17 +1116,17 @@ function SearchResultsPage() {
 
       <div className="action-bar">
         <div className="action-bar-left">
-          <button className="action-btn" disabled={!hasSelection} data-tooltip="Bookmark All">
+          <button className="action-btn" disabled={!hasSelection} data-tooltip="Bookmark all">
             <BookmarkIcon />
-            <span className="action-btn-text">Bookmark All</span>
+            <span className="action-btn-text">Bookmark all</span>
           </button>
-          <button className="action-btn" disabled={!hasSelection} data-tooltip="Share All">
+          <button className="action-btn" disabled={!hasSelection} data-tooltip="Share all">
             <ShareIcon />
-            <span className="action-btn-text">Share All</span>
+            <span className="action-btn-text">Share all</span>
           </button>
-          <button className="action-btn" disabled={!hasSelection} data-tooltip="Download All">
+          <button className="action-btn" disabled={!hasSelection} data-tooltip="Download all">
             <DownloadIcon />
-            <span className="action-btn-text">Download All</span>
+            <span className="action-btn-text">Download all</span>
           </button>
           <div className="bulk-menu-wrapper">
             <button

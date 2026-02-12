@@ -141,7 +141,7 @@ function HomePage() {
           })}
         </div>
       </CustomCard>
-      <Link to={viewAllLink} className="view-all-link">View All</Link>
+      <Link to={viewAllLink} className="view-all-link">View all</Link>
     </div>
   );
 
@@ -150,9 +150,9 @@ function HomePage() {
       <h1 className="welcome-title">Welcome, Marie Curie!</h1>
 
       <div className="home-sections">
-        {renderSection('Recommend Apps', recommendedApps, '/apps')}
-        {renderSection('Saved Searches', savedSearches, '/search')}
-        {renderSection('Recent Data', recentData, '/data-table')}
+        {renderSection('Recommended apps', recommendedApps, '/apps')}
+        {renderSection('Saved searches', savedSearches, '/search')}
+        {renderSection('Recent data', recentData, '/data-table')}
       </div>
     </div>
   );
