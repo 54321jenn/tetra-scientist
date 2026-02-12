@@ -1,0 +1,21 @@
+name: Sync to ts-sci-ux
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to ts-sci-ux
+        run: |
+          git remote add target https://x-access-token:${{ secrets.TS_SCI_UX_PAT }}@github.com/54321jenn-ts/ts-sci-ux.git
+          git push target HEAD:master --force
