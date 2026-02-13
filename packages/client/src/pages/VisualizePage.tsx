@@ -76,12 +76,66 @@ const ChartIcon = () => (
   </svg>
 );
 
+const ThumbsUpIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M2 20h2c.55 0 1-.45 1-1v-9c0-.55-.45-1-1-1H2v11zm19.83-7.12c.11-.25.17-.52.17-.8V11c0-1.1-.9-2-2-2h-5.5l.92-4.65c.05-.22.02-.46-.08-.66a2.1 2.1 0 0 0-.88-1.22L14 2 7.59 8.41C7.21 8.79 7 9.3 7 9.83v7.84C7 18.95 8.05 20 9.34 20h8.11c.7 0 1.36-.37 1.72-.97l2.66-6.15z"/>
+  </svg>
+);
+
+const ThumbsDownIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M22 4h-2c-.55 0-1 .45-1 1v9c0 .55.45 1 1 1h2V4zM2.17 11.12c-.11.25-.17.52-.17.8V13c0 1.1.9 2 2 2h5.5l-.92 4.65c-.05.22-.02.46.08.66.23.45.52.86.88 1.22L10 22l6.41-6.41c.38-.38.59-.89.59-1.42V6.34C17 5.05 15.95 4 14.66 4H6.55c-.7 0-1.36.37-1.72.97l-2.66 6.15z"/>
+  </svg>
+);
+
+const DatabaseIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+  </svg>
+);
+
+const CodeIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="16 18 22 12 16 6"></polyline>
+    <polyline points="8 6 2 12 8 18"></polyline>
+  </svg>
+);
+
+const QueryIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <line x1="10" y1="9" x2="8" y2="9"></line>
+  </svg>
+);
+
+const SaveIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+    <polyline points="7 3 7 8 15 8"></polyline>
+  </svg>
+);
+
+const MoreIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="1"></circle>
+    <circle cx="19" cy="12" r="1"></circle>
+    <circle cx="5" cy="12" r="1"></circle>
+  </svg>
+);
+
 interface Message {
   id: string;
   type: 'user' | 'assistant';
   content: string;
   visualization?: 'bar' | 'line' | 'scatter' | 'pie';
   dataPreview?: boolean;
+  rating?: 'up' | 'down' | null;
 }
 
 interface DataSource {
@@ -103,9 +157,14 @@ function VisualizePage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showDataPanel, setShowDataPanel] = useState(false);
   const [currentVisualization, setCurrentVisualization] = useState<'bar' | 'line' | 'scatter' | 'pie' | null>(null);
-  const [showVizSidesheet, setShowVizSidesheet] = useState(false);
+  const [activeModal, setActiveModal] = useState<'data' | 'query' | 'code' | 'save' | null>(null);
+  const [selectedVizId, setSelectedVizId] = useState<string | null>(null);
+  const [saveFeedback, setSaveFeedback] = useState<string | null>(null);
+  const [chatPanelWidth, setChatPanelWidth] = useState(100); // percentage
+  const [isResizing, setIsResizing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const dataSources: DataSource[] = [
     { name: 'Proteomics Study 3', type: 'Dataset', records: 1247 },
@@ -113,9 +172,60 @@ function VisualizePage() {
     { name: 'Sample Measurements', type: 'Excel', records: 456 },
   ];
 
+  const mockDashboards = [
+    { id: '1', name: 'Pipeline Overview' },
+    { id: '2', name: 'Experiment Analysis' },
+    { id: '3', name: 'Lab Metrics' },
+  ];
+
+  const handleRating = (messageId: string, rating: 'up' | 'down') => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId ? { ...msg, rating: msg.rating === rating ? null : rating } : msg
+      )
+    );
+  };
+
+  const handleSaveToDashboard = (dashboardId: string, dashboardName: string) => {
+    setSaveFeedback(`Saved to "${dashboardName}"!`);
+    setActiveModal(null);
+    setTimeout(() => setSaveFeedback(null), 3000);
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Get the current visualization from messages
+  const currentViz = messages.find(m => m.visualization)?.visualization || null;
+  const currentVizMessage = messages.find(m => m.visualization);
+
+  // Resize panel handlers
+  const handleMouseDown = () => {
+    setIsResizing(true);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isResizing || !containerRef.current) return;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+    setChatPanelWidth(Math.min(Math.max(newWidth, 15), 85)); // 15-85% range
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(false);
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isResizing]);
 
   useEffect(() => {
     scrollToBottom();
@@ -126,17 +236,17 @@ function VisualizePage() {
     setRightActions(
       <button
         className="toolbar-chart-btn"
-        onClick={() => setShowVizSidesheet(!showVizSidesheet)}
+        onClick={() => setChatPanelWidth(chatPanelWidth < 50 ? 100 : 25)}
         disabled={!currentVisualization}
-        title={showVizSidesheet ? 'Hide chart' : 'Show chart'}
+        title={chatPanelWidth < 50 ? 'Hide chart' : 'Show chart'}
       >
         <ChartIcon />
-        <span>{showVizSidesheet ? 'Hide chart' : 'Show chart'}</span>
+        <span>{chatPanelWidth < 50 ? 'Hide chart' : 'Show chart'}</span>
       </button>
     );
 
     return () => setRightActions(null);
-  }, [setRightActions, currentVisualization, showVizSidesheet]);
+  }, [setRightActions, currentVisualization, chatPanelWidth]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,7 +275,7 @@ function VisualizePage() {
           visualization: 'bar',
         };
         setCurrentVisualization('bar');
-        setShowVizSidesheet(true);
+        setChatPanelWidth(25);
       } else if (lowerInput.includes('line') || lowerInput.includes('time') || lowerInput.includes('trend')) {
         response = {
           id: (Date.now() + 1).toString(),
@@ -174,7 +284,7 @@ function VisualizePage() {
           visualization: 'line',
         };
         setCurrentVisualization('line');
-        setShowVizSidesheet(true);
+        setChatPanelWidth(25);
       } else if (lowerInput.includes('scatter') || lowerInput.includes('correlation') || lowerInput.includes('relationship')) {
         response = {
           id: (Date.now() + 1).toString(),
@@ -183,7 +293,7 @@ function VisualizePage() {
           visualization: 'scatter',
         };
         setCurrentVisualization('scatter');
-        setShowVizSidesheet(true);
+        setChatPanelWidth(25);
       } else if (lowerInput.includes('pie') || lowerInput.includes('proportion') || lowerInput.includes('percentage') || lowerInput.includes('distribution')) {
         response = {
           id: (Date.now() + 1).toString(),
@@ -192,7 +302,7 @@ function VisualizePage() {
           visualization: 'pie',
         };
         setCurrentVisualization('pie');
-        setShowVizSidesheet(true);
+        setChatPanelWidth(25);
       } else if (lowerInput.includes('recommend') || lowerInput.includes('best') || lowerInput.includes('suggest') || lowerInput.includes('how should')) {
         response = {
           id: (Date.now() + 1).toString(),
@@ -323,10 +433,15 @@ function VisualizePage() {
     }
   };
 
+  const hasVisualization = currentVisualization !== null;
+
   return (
-    <div className={`visualize-page ${showVizSidesheet ? 'sidesheet-open' : ''}`}>
+    <div className={`visualize-page ${isResizing ? 'resizing' : ''}`} ref={containerRef}>
       <div className="visualize-content">
-        <div className="chat-panel">
+        <div
+          className="chat-panel"
+          style={{ width: hasVisualization ? `${chatPanelWidth}%` : '100%' }}
+        >
           <div className="messages-container">
             {messages.map((message) => (
               <div key={message.id} className={`message ${message.type}`}>
@@ -338,22 +453,8 @@ function VisualizePage() {
                 <div className="message-content">
                   <div className="message-text">{message.content}</div>
                   {message.visualization && (
-                    <div className="message-visualization">
-                      {renderVisualization(message.visualization)}
-                      <div className="visualization-actions">
-                        <button className="viz-action-btn" title="Share with colleague">
-                          <ShareIcon /> Share
-                        </button>
-                        <button className="viz-action-btn" title="Copy to clipboard">
-                          <CopyIcon /> Copy
-                        </button>
-                        <button className="viz-action-btn" title="Export as image">
-                          <DownloadIcon /> Export
-                        </button>
-                        <button className="viz-action-btn primary" title="Send to ELN">
-                          <NotebookIcon /> Send to ELN
-                        </button>
-                      </div>
+                    <div className="viz-indicator">
+                      <ChartIcon /> Visualization rendered in output panel →
                     </div>
                   )}
                   {message.dataPreview && (
@@ -395,6 +496,80 @@ function VisualizePage() {
           </form>
         </div>
 
+        {/* Resize Handle */}
+        {hasVisualization && (
+          <div className="resize-handle" onMouseDown={handleMouseDown}>
+            <div className="resize-handle-bar"></div>
+          </div>
+        )}
+
+        {/* Output Panel */}
+        {hasVisualization && currentVizMessage && (
+          <div className="output-panel" style={{ width: `${100 - chatPanelWidth}%` }}>
+            <div className="output-panel-header">
+              <h3>Visualization output</h3>
+            </div>
+            <div className="output-panel-content">
+              {renderVisualization(currentVisualization)}
+              <div className="visualization-actions">
+                <div className="viz-actions-left">
+                  <button
+                    className={`viz-rating-btn ${currentVizMessage.rating === 'up' ? 'active' : ''}`}
+                    onClick={() => handleRating(currentVizMessage.id, 'up')}
+                    title="Good response"
+                  >
+                    <ThumbsUpIcon />
+                  </button>
+                  <button
+                    className={`viz-rating-btn ${currentVizMessage.rating === 'down' ? 'active' : ''}`}
+                    onClick={() => handleRating(currentVizMessage.id, 'down')}
+                    title="Poor response"
+                  >
+                    <ThumbsDownIcon />
+                  </button>
+                  <span className="viz-actions-divider"></span>
+                  <button
+                    className="viz-action-btn"
+                    onClick={() => { setSelectedVizId(currentVizMessage.id); setActiveModal('data'); }}
+                    title="View source data"
+                  >
+                    <DatabaseIcon /> Data
+                  </button>
+                  <button
+                    className="viz-action-btn"
+                    onClick={() => { setSelectedVizId(currentVizMessage.id); setActiveModal('query'); }}
+                    title="View source query"
+                  >
+                    <QueryIcon /> Query
+                  </button>
+                  <button
+                    className="viz-action-btn"
+                    onClick={() => { setSelectedVizId(currentVizMessage.id); setActiveModal('code'); }}
+                    title="View plot code"
+                  >
+                    <CodeIcon /> Code
+                  </button>
+                </div>
+                <div className="viz-actions-right">
+                  <button className="viz-action-btn" title="Share"><ShareIcon /></button>
+                  <button className="viz-action-btn" title="Copy"><CopyIcon /></button>
+                  <button className="viz-action-btn" title="Export"><DownloadIcon /></button>
+                  <button
+                    className="viz-action-btn primary"
+                    onClick={() => { setSelectedVizId(currentVizMessage.id); setActiveModal('save'); }}
+                    title="Save to dashboard"
+                  >
+                    <SaveIcon /> Save
+                  </button>
+                  <button className="viz-action-btn more-btn" title="More actions">
+                    <MoreIcon />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {showDataPanel && (
           <div className="data-panel">
             <div className="data-panel-header">
@@ -419,30 +594,118 @@ function VisualizePage() {
         )}
       </div>
 
-      {/* Visualization Sidesheet - Push State */}
-      <div className={`current-viz-panel ${showVizSidesheet ? 'open' : ''}`}>
-        <div className="current-viz-header">
-          <h3>Current visualization</h3>
-          <div className="current-viz-header-actions">
-            <div className="viz-toolbar">
-              <button className="viz-action-btn" title="Share"><ShareIcon /></button>
-              <button className="viz-action-btn" title="Copy"><CopyIcon /></button>
-              <button className="viz-action-btn" title="Export"><DownloadIcon /></button>
-              <button className="viz-action-btn primary" title="Send to ELN"><NotebookIcon /></button>
-            </div>
-            <button
-              className="close-viz-btn"
-              onClick={() => setShowVizSidesheet(false)}
-              aria-label="Close visualization"
-            >
-              <CloseIcon />
-            </button>
+      {/* Save feedback toast */}
+      {saveFeedback && (
+        <div className="save-feedback-toast">{saveFeedback}</div>
+      )}
+
+      {/* Modals */}
+      {activeModal && (
+        <div className="viz-modal-overlay" onClick={() => setActiveModal(null)}>
+          <div className="viz-modal" onClick={(e) => e.stopPropagation()}>
+            {activeModal === 'data' && (
+              <>
+                <div className="viz-modal-header">
+                  <h3><DatabaseIcon /> Source data</h3>
+                  <button className="viz-modal-close" onClick={() => setActiveModal(null)}>×</button>
+                </div>
+                <div className="viz-modal-content">
+                  <div className="source-data-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Experiment</th>
+                          <th>Sample Count</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>Exp A</td><td>28</td><td>Complete</td></tr>
+                        <tr><td>Exp B</td><td>35</td><td>Complete</td></tr>
+                        <tr><td>Exp C</td><td>45</td><td>Complete</td></tr>
+                        <tr><td>Exp D</td><td>22</td><td>In Progress</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="source-data-info">
+                    <p><strong>Source:</strong> Proteomics Study 3</p>
+                    <p><strong>Records:</strong> 1,247 total • 4 displayed</p>
+                  </div>
+                </div>
+              </>
+            )}
+            {activeModal === 'query' && (
+              <>
+                <div className="viz-modal-header">
+                  <h3><QueryIcon /> Source query</h3>
+                  <button className="viz-modal-close" onClick={() => setActiveModal(null)}>×</button>
+                </div>
+                <div className="viz-modal-content">
+                  <pre className="source-code-block">{`SELECT experiment_name, COUNT(*) as sample_count
+FROM samples
+WHERE study_id = 'proteomics_study_3'
+  AND status IN ('Complete', 'In Progress')
+GROUP BY experiment_name
+ORDER BY experiment_name;`}</pre>
+                  <button className="viz-action-btn" style={{ marginTop: '12px' }}><CopyIcon /> Copy query</button>
+                </div>
+              </>
+            )}
+            {activeModal === 'code' && (
+              <>
+                <div className="viz-modal-header">
+                  <h3><CodeIcon /> Plot code</h3>
+                  <button className="viz-modal-close" onClick={() => setActiveModal(null)}>×</button>
+                </div>
+                <div className="viz-modal-content">
+                  <pre className="source-code-block">{`import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load data from TDP
+df = tdp.query("""
+  SELECT experiment_name, COUNT(*) as sample_count
+  FROM samples WHERE study_id = 'proteomics_study_3'
+  GROUP BY experiment_name
+""")
+
+# Create bar chart
+fig, ax = plt.subplots(figsize=(10, 6))
+colors = ['#1976D2', '#42A5F5', '#64B5F6', '#90CAF9']
+ax.bar(df['experiment_name'], df['sample_count'], color=colors)
+ax.set_xlabel('Experiment')
+ax.set_ylabel('Sample Count')
+ax.set_title('Sample Counts by Experiment')
+plt.tight_layout()
+plt.show()`}</pre>
+                  <button className="viz-action-btn" style={{ marginTop: '12px' }}><CopyIcon /> Copy code</button>
+                </div>
+              </>
+            )}
+            {activeModal === 'save' && (
+              <>
+                <div className="viz-modal-header">
+                  <h3><SaveIcon /> Save to dashboard</h3>
+                  <button className="viz-modal-close" onClick={() => setActiveModal(null)}>×</button>
+                </div>
+                <div className="viz-modal-content">
+                  <p className="save-modal-desc">Select a dashboard to add this visualization:</p>
+                  <div className="dashboard-list">
+                    {mockDashboards.map((dashboard) => (
+                      <button
+                        key={dashboard.id}
+                        className="dashboard-list-item"
+                        onClick={() => handleSaveToDashboard(dashboard.name)}
+                      >
+                        {dashboard.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
-        <div className="current-viz-content">
-          {currentVisualization && renderVisualization(currentVisualization)}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
