@@ -34,6 +34,11 @@ const sidebarItems = [
     label: 'Visualize data',
     path: '/visualize',
   },
+  {
+    icon: 'dashboard',
+    label: 'Dashboards',
+    path: '/dashboards',
+  },
 ];
 
 function LayoutContent() {
