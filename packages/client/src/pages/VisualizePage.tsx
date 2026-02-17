@@ -694,7 +694,7 @@ plt.show()`}</pre>
                       <button
                         key={dashboard.id}
                         className="dashboard-list-item"
-                        onClick={() => handleSaveToDashboard(dashboard.name)}
+                        onClick={() => handleSaveToDashboard(dashboard.id, dashboard.name)}
                       >
                         {dashboard.name}
                       </button>
