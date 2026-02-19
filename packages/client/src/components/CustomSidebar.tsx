@@ -60,7 +60,12 @@ const iconMap: Record<string, JSX.Element> = {
   ),
   dashboard: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10-10h8v8h-8V3zm0 10h8v8h-8v-8z" />
+      <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M7 14l3-3 3 3 5-5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="7" cy="14" r="1.5" fill="currentColor"/>
+      <circle cx="10" cy="11" r="1.5" fill="currentColor"/>
+      <circle cx="13" cy="14" r="1.5" fill="currentColor"/>
+      <circle cx="18" cy="9" r="1.5" fill="currentColor"/>
     </svg>
   ),
 };
