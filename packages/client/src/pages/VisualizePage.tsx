@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useToolbar } from '../contexts/ToolbarContext';
+import VisualizationRouter from '../components/VisualizationRouter';
+import type { ChartType } from '../types/visualizations';
+import { detectChartType, generateChartResponse } from '../utils/chartDetection';
 import './VisualizePage.css';
 
 // Icon components
@@ -133,7 +136,7 @@ interface Message {
   id: string;
   type: 'user' | 'assistant';
   content: string;
-  visualization?: 'bar' | 'line' | 'scatter' | 'pie';
+  visualization?: ChartType;
   dataPreview?: boolean;
   rating?: 'up' | 'down' | null;
 }
@@ -150,13 +153,13 @@ function VisualizePage() {
     {
       id: '1',
       type: 'assistant',
-      content: "Hello! I'm your data visualization assistant. Describe what you'd like to visualize, and I'll help you create charts and graphs from your data. You can say things like:\n\n• \"Show me a bar chart of sample counts by experiment\"\n• \"Create a line graph of temperature over time\"\n• \"What's the best way to visualize protein concentration data?\"\n\nWhat would you like to visualize today?",
+      content: "Hello! I'm your data visualization assistant. I can create a wide variety of scientific charts and plots. Here are some examples:\n\n**Core plots:** \"Show me a line chart of temperature over time\" • \"Create a scatter plot for calibration\" • \"Make a box plot of assay variability\"\n\n**Statistical:** \"Generate a dose-response curve\" • \"Show ROC curve for classification\" • \"Create error bars with significance\"\n\n**Omics:** \"Make a heatmap of expression data\" • \"Show PCA clustering\" • \"Create a volcano plot\" • \"Display Manhattan plot for GWAS\"\n\n**Lab operations:** \"Display plate layout\" • \"Show control chart for QC\" • \"Plot throughput over time\"\n\n**Chemistry:** \"Show chromatogram\" • \"Display UV-Vis spectrum\" • \"Create kinetics plot\"\n\n**Chemical compounds:** \"Show 2D chemical structure\" • \"Display chemical space map\" • \"Create property plot (LogP vs MW)\" • \"Show structure-activity heatmap\"\n\n**Proteins:** \"Display 3D protein structure\" • \"Show domain architecture\" • \"Create contact map\" • \"Display binding site\"\n\n**DNA/RNA:** \"Show genome track\" • \"Display coverage track\" • \"Create sequence logo\" • \"Show Sashimi plot for splicing\"\n\n**Clinical:** \"Make Kaplan-Meier curve\" • \"Show longitudinal biomarker data\"\n\nWhat would you like to visualize today?",
     },
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showDataPanel, setShowDataPanel] = useState(false);
-  const [currentVisualization, setCurrentVisualization] = useState<'bar' | 'line' | 'scatter' | 'pie' | null>(null);
+  const [currentVisualization, setCurrentVisualization] = useState<ChartType | null>(null);
   const [activeModal, setActiveModal] = useState<'data' | 'query' | 'code' | 'save' | null>(null);
   const [selectedVizId, setSelectedVizId] = useState<string | null>(null);
   const [saveFeedback, setSaveFeedback] = useState<string | null>(null);
@@ -267,47 +270,26 @@ function VisualizePage() {
       const lowerInput = inputValue.toLowerCase();
       let response: Message;
 
-      if (lowerInput.includes('bar') || lowerInput.includes('count') || lowerInput.includes('compare')) {
+      // Try to detect chart type from user input
+      const detectedChartType = detectChartType(inputValue);
+      console.log('VisualizePage: Input:', inputValue);
+      console.log('VisualizePage: Detected chart type:', detectedChartType);
+
+      if (detectedChartType) {
+        // Generate response for detected chart type
         response = {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: "I've created a bar chart showing the sample counts by experiment. The data is pulled from your Proteomics Study 3 dataset. You can see that Experiment C has the highest count at 45 samples.\n\nWould you like me to:\n• Add error bars to show standard deviation?\n• Change the color scheme?\n• Sort the bars by value?",
-          visualization: 'bar',
+          content: generateChartResponse(detectedChartType),
+          visualization: detectedChartType,
         };
-        setCurrentVisualization('bar');
-        setChatPanelWidth(25);
-      } else if (lowerInput.includes('line') || lowerInput.includes('time') || lowerInput.includes('trend')) {
-        response = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: "Here's a line chart showing the temperature readings over time. The data spans 7 days and shows a clear upward trend with some daily variation.\n\nI can help you:\n• Add a trendline to highlight the pattern\n• Show confidence intervals\n• Compare with another time series",
-          visualization: 'line',
-        };
-        setCurrentVisualization('line');
-        setChatPanelWidth(25);
-      } else if (lowerInput.includes('scatter') || lowerInput.includes('correlation') || lowerInput.includes('relationship')) {
-        response = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: "I've generated a scatter plot showing the relationship between concentration and response. There appears to be a positive correlation (r = 0.82).\n\nWould you like me to:\n• Add a regression line?\n• Color points by sample group?\n• Identify outliers?",
-          visualization: 'scatter',
-        };
-        setCurrentVisualization('scatter');
-        setChatPanelWidth(25);
-      } else if (lowerInput.includes('pie') || lowerInput.includes('proportion') || lowerInput.includes('percentage') || lowerInput.includes('distribution')) {
-        response = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: "Here's a pie chart showing the distribution of sample types in your dataset. The majority (42%) are Type A samples.\n\nI can also:\n• Convert this to a donut chart\n• Show as a stacked bar instead\n• Add percentage labels",
-          visualization: 'pie',
-        };
-        setCurrentVisualization('pie');
+        setCurrentVisualization(detectedChartType);
         setChatPanelWidth(25);
       } else if (lowerInput.includes('recommend') || lowerInput.includes('best') || lowerInput.includes('suggest') || lowerInput.includes('how should')) {
         response = {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: "Based on your data, here are my recommendations:\n\n**For comparing categories:** Use a bar chart - great for showing differences between groups\n\n**For trends over time:** Use a line chart - ideal for temporal patterns\n\n**For relationships:** Use a scatter plot - shows correlations between variables\n\n**For proportions:** Use a pie chart - best for showing parts of a whole\n\nWhat type of comparison are you trying to make? Tell me more about your data and I'll suggest the best visualization.",
+          content: "Based on your data, here are my recommendations:\n\n**For time-series data:** Line charts, control charts, or longitudinal plots\n\n**For comparing groups:** Bar charts, box plots, or violin plots\n\n**For correlations:** Scatter plots, calibration curves, or dose-response curves\n\n**For distributions:** Histograms, box plots, or violin plots\n\n**For omics data:** Heatmaps, volcano plots, PCA, or MA plots\n\n**For plate data:** Plate layout heatmaps\n\n**For clinical data:** Kaplan-Meier curves, forest plots, or longitudinal plots\n\nWhat type of analysis are you trying to perform? Tell me more about your data and I'll suggest the best visualization.",
         };
       } else if (lowerInput.includes('data') || lowerInput.includes('source') || lowerInput.includes('using')) {
         response = {
@@ -321,7 +303,7 @@ function VisualizePage() {
         response = {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: "I'd be happy to help you visualize that! To create the best chart, could you tell me:\n\n1. What type of chart would you like? (bar, line, scatter, pie)\n2. What data should be on each axis?\n3. Do you want to group or color by any category?\n\nOr just describe what insight you're looking for, and I'll recommend the best approach!",
+          content: "I'd be happy to help you visualize that! I can create many types of scientific charts:\n\n**Core plots:** Line, scatter, bar, box, violin, histogram\n**Statistical:** Error bars, dose-response, ROC curves, forest plots\n**Omics:** Heatmaps, PCA, volcano plots, MA plots\n**Lab operations:** Plate layouts, control charts, throughput plots\n**Chemistry:** Chromatograms, spectra, kinetics plots\n**Clinical:** Longitudinal plots, Kaplan-Meier curves\n\nDescribe what you'd like to visualize, and I'll create the perfect chart!",
         };
       }
 
@@ -337,100 +319,8 @@ function VisualizePage() {
     }
   };
 
-  const renderVisualization = (type: 'bar' | 'line' | 'scatter' | 'pie') => {
-    const chartColors = {
-      primary: '#1976D2',
-      secondary: '#42A5F5',
-      tertiary: '#64B5F6',
-      quaternary: '#90CAF9',
-    };
-
-    switch (type) {
-      case 'bar':
-        return (
-          <div className="chart-container">
-            <div className="chart-title">Sample Counts by Experiment</div>
-            <div className="bar-chart">
-              <div className="bar-group">
-                <div className="bar" style={{ height: '60%', backgroundColor: chartColors.primary }}></div>
-                <span className="bar-label">Exp A</span>
-                <span className="bar-value">28</span>
-              </div>
-              <div className="bar-group">
-                <div className="bar" style={{ height: '75%', backgroundColor: chartColors.secondary }}></div>
-                <span className="bar-label">Exp B</span>
-                <span className="bar-value">35</span>
-              </div>
-              <div className="bar-group">
-                <div className="bar" style={{ height: '95%', backgroundColor: chartColors.tertiary }}></div>
-                <span className="bar-label">Exp C</span>
-                <span className="bar-value">45</span>
-              </div>
-              <div className="bar-group">
-                <div className="bar" style={{ height: '50%', backgroundColor: chartColors.quaternary }}></div>
-                <span className="bar-label">Exp D</span>
-                <span className="bar-value">22</span>
-              </div>
-            </div>
-          </div>
-        );
-      case 'line':
-        return (
-          <div className="chart-container">
-            <div className="chart-title">Temperature Over Time</div>
-            <div className="line-chart">
-              <svg viewBox="0 0 300 150" className="line-svg">
-                <polyline
-                  fill="none"
-                  stroke={chartColors.primary}
-                  strokeWidth="3"
-                  points="20,120 60,100 100,110 140,80 180,70 220,50 260,30"
-                />
-                <g className="data-points">
-                  {[[20,120], [60,100], [100,110], [140,80], [180,70], [220,50], [260,30]].map(([x, y], i) => (
-                    <circle key={i} cx={x} cy={y} r="5" fill={chartColors.primary} />
-                  ))}
-                </g>
-              </svg>
-              <div className="line-labels">
-                <span>Day 1</span><span>Day 2</span><span>Day 3</span><span>Day 4</span><span>Day 5</span><span>Day 6</span><span>Day 7</span>
-              </div>
-            </div>
-          </div>
-        );
-      case 'scatter':
-        return (
-          <div className="chart-container">
-            <div className="chart-title">Concentration vs Response</div>
-            <div className="scatter-chart">
-              <svg viewBox="0 0 300 200" className="scatter-svg">
-                {[[30,160], [50,140], [70,130], [90,110], [110,100], [130,85], [150,80], [170,65], [190,55], [210,45], [230,35], [250,25]].map(([x, y], i) => (
-                  <circle key={i} cx={x} cy={y} r="8" fill={chartColors.primary} opacity="0.7" />
-                ))}
-                <line x1="20" y1="170" x2="270" y2="20" stroke={chartColors.secondary} strokeWidth="2" strokeDasharray="5,5" />
-              </svg>
-            </div>
-          </div>
-        );
-      case 'pie':
-        return (
-          <div className="chart-container">
-            <div className="chart-title">Sample Type Distribution</div>
-            <div className="pie-chart">
-              <svg viewBox="0 0 200 200" className="pie-svg">
-                <circle cx="100" cy="100" r="80" fill="transparent" stroke={chartColors.primary} strokeWidth="40" strokeDasharray="151 252" strokeDashoffset="0" />
-                <circle cx="100" cy="100" r="80" fill="transparent" stroke={chartColors.secondary} strokeWidth="40" strokeDasharray="88 252" strokeDashoffset="-151" />
-                <circle cx="100" cy="100" r="80" fill="transparent" stroke={chartColors.tertiary} strokeWidth="40" strokeDasharray="63 252" strokeDashoffset="-239" />
-              </svg>
-              <div className="pie-legend">
-                <div className="legend-item"><span className="legend-color" style={{ backgroundColor: chartColors.primary }}></span>Type A (42%)</div>
-                <div className="legend-item"><span className="legend-color" style={{ backgroundColor: chartColors.secondary }}></span>Type B (35%)</div>
-                <div className="legend-item"><span className="legend-color" style={{ backgroundColor: chartColors.tertiary }}></span>Type C (23%)</div>
-              </div>
-            </div>
-          </div>
-        );
-    }
+  const renderVisualization = (type: ChartType) => {
+    return <VisualizationRouter chartType={type} />;
   };
 
   const hasVisualization = currentVisualization !== null;
