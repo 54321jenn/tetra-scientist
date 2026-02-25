@@ -5,11 +5,13 @@ import ChemicalStructureViewer from './ChemicalStructureViewer';
 import MolecularViewer from './MolecularViewer';
 import ProteinViewer from './ProteinViewer';
 import GenomeViewer from './GenomeViewer';
+import type {MockDataResult} from '../utils/mockDataGenerators';
 
 export interface VisualizationRouterProps {
 	chartType: ChartType;
 	title?: string;
 	className?: string;
+	realData?: MockDataResult;
 }
 
 /**
@@ -23,7 +25,7 @@ export interface VisualizationRouterProps {
  * - Mol*: Protein structures and molecular biology
  * - IGV.js: Genomics visualizations
  */
-const VisualizationRouter = ({chartType, title, className}: VisualizationRouterProps) => {
+const VisualizationRouter = ({chartType, title, className, realData}: VisualizationRouterProps) => {
 	const config = CHART_CONFIGS[chartType];
 
 	if (!config) {
@@ -37,7 +39,7 @@ const VisualizationRouter = ({chartType, title, className}: VisualizationRouterP
 	// Route to the appropriate visualization library
 	switch (config.library) {
 		case 'plotly':
-			return <PlotlyChart chartType={chartType} title={title} className={className} />;
+			return <PlotlyChart chartType={chartType} title={title} className={className} realData={realData} />;
 
 		case 'rdkit':
 			return <ChemicalStructureViewer chartType={chartType} title={title} className={className} />;
@@ -54,7 +56,7 @@ const VisualizationRouter = ({chartType, title, className}: VisualizationRouterP
 		default:
 			// Fallback to Plotly for unknown libraries
 			console.warn(`Unknown library: ${config.library}, falling back to Plotly`);
-			return <PlotlyChart chartType={chartType} title={title} className={className} />;
+			return <PlotlyChart chartType={chartType} title={title} className={className} realData={realData} />;
 	}
 };
 

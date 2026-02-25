@@ -2,23 +2,25 @@ import {useEffect, useRef, useState} from 'react';
 import Plot from 'react-plotly.js';
 import type {ChartType} from '../types/visualizations';
 import {getMockDataForChart} from '../utils/mockDataGenerators';
+import type {MockDataResult} from '../utils/mockDataGenerators';
 import './PlotlyChart.css';
 
 interface PlotlyChartProps {
 	chartType: ChartType;
 	title?: string;
 	className?: string;
+	realData?: MockDataResult;
 }
 
-export const PlotlyChart = ({chartType, title, className}: PlotlyChartProps) => {
+export const PlotlyChart = ({chartType, title, className, realData}: PlotlyChartProps) => {
 	const [chartData, setChartData] = useState<any>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		// Generate mock data for the chart type
-		const mockData = getMockDataForChart(chartType);
-		setChartData(mockData);
-	}, [chartType]);
+		// Use real data if provided, otherwise generate mock data
+		const data = realData ?? getMockDataForChart(chartType);
+		setChartData(data);
+	}, [chartType, realData]);
 
 	if (!chartData) {
 		return (
