@@ -3,6 +3,9 @@ import { useToolbar } from '../contexts/ToolbarContext';
 import VisualizationRouter from '../components/VisualizationRouter';
 import type { ChartType } from '../types/visualizations';
 import { detectChartType, generateChartResponse } from '../utils/chartDetection';
+import { benchlingAPIClient } from '../services/BenchlingAPIClient';
+import { BenchlingDataAdapter } from '../services/BenchlingDataAdapter';
+import type { MockDataResult } from '../utils/mockDataGenerators';
 import './VisualizePage.css';
 
 // Icon components
@@ -132,11 +135,22 @@ const MoreIcon = () => (
   </svg>
 );
 
+interface ChartMeta {
+  source: string;
+  endpoint: string;
+  recordCount: number;
+  tableHeaders: string[];
+  tableRows: (string | number)[][];
+  pythonCode: string;
+}
+
 interface Message {
   id: string;
   type: 'user' | 'assistant';
   content: string;
   visualization?: ChartType;
+  realData?: MockDataResult;
+  chartMeta?: ChartMeta;
   dataPreview?: boolean;
   rating?: 'up' | 'down' | null;
 }
@@ -251,65 +265,219 @@ function VisualizePage() {
     return () => setRightActions(null);
   }, [setRightActions, currentVisualization, chatPanelWidth]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const fetchBenchlingData = async (chartType: ChartType): Promise<{realData: MockDataResult; chartMeta?: ChartMeta}> => {
+    const baseUrl = (import.meta.env.VITE_BENCHLING_URL as string | undefined)?.replace(/\/$/, '') ?? 'https://tetrasciencetest.benchling.com';
+
+    // Shared OAuth2 + pagination snippet for the Code modal
+    const authSnippet = `import requests, base64
+
+BASE_URL = "${baseUrl}"
+creds = base64.b64encode(b"CLIENT_ID:CLIENT_SECRET").decode()
+token = requests.post(f"{BASE_URL}/api/v2/token",
+    headers={"Authorization": f"Basic {creds}"},
+    data={"grant_type": "client_credentials"}).json()["access_token"]
+hdrs = {"Authorization": f"Bearer {token}"}`;
+
+    const paginatedFetch = (responseKey: string, path: string): string =>
+      `${authSnippet}
+
+# Fetch ${responseKey} (paginated)
+results = []
+params = {"pageSize": "50"}
+while True:
+    res = requests.get(f"{BASE_URL}${path}", headers=hdrs, params=params)
+    page = res.json()
+    results.extend(page.get("${responseKey}", []))
+    if not page.get("nextToken"):
+        break
+    params["nextToken"] = page["nextToken"]
+print(f"Fetched {len(results)} records")`;
+
+    try {
+      switch (chartType) {
+        case 'benchling-assay-scatter':
+        case 'benchling-assay-bar': {
+          const results = await benchlingAPIClient.getAssayResults();
+          const realData = chartType === 'benchling-assay-scatter'
+            ? BenchlingDataAdapter.assayResultsToScatter(results)
+            : BenchlingDataAdapter.assayResultsToBar(results);
+          const tableHeaders = ['Schema', 'Population', 'Frequency', 'Created At'];
+          const tableRows: (string | number)[][] = results.slice(0, 10).map(r => {
+            const popField = Object.values(r.fields).find(f => f.type === 'text');
+            const freqField = Object.values(r.fields).find(f => f.type === 'float');
+            return [
+              r.schema?.name ?? '—',
+              popField?.textValue ?? popField?.displayValue ?? '—',
+              freqField?.value != null ? Number(freqField.value).toFixed(2) : '—',
+              r.createdAt.slice(0, 10),
+            ];
+          });
+          return {
+            realData,
+            chartMeta: {
+              source: 'Benchling · Assay Results',
+              endpoint: `GET ${baseUrl}/api/v2/assay-results`,
+              recordCount: results.length,
+              tableHeaders,
+              tableRows,
+              pythonCode: paginatedFetch('assayResults', '/api/v2/assay-results'),
+            },
+          };
+        }
+        case 'benchling-inventory-timeline':
+        case 'benchling-inventory-status': {
+          const containers = await benchlingAPIClient.getContainers();
+          const realData = chartType === 'benchling-inventory-timeline'
+            ? BenchlingDataAdapter.containersToTimeline(containers)
+            : BenchlingDataAdapter.containersToStatus(containers);
+          const tableHeaders = ['Name', 'Schema', 'Checkout Status', 'Created At'];
+          const tableRows: (string | number)[][] = containers.slice(0, 10).map(c => [
+            c.name,
+            c.schema?.name ?? '—',
+            c.checkoutRecord?.status ?? 'AVAILABLE',
+            c.createdAt.slice(0, 10),
+          ]);
+          return {
+            realData,
+            chartMeta: {
+              source: 'Benchling · Containers',
+              endpoint: `GET ${baseUrl}/api/v2/containers`,
+              recordCount: containers.length,
+              tableHeaders,
+              tableRows,
+              pythonCode: paginatedFetch('containers', '/api/v2/containers'),
+            },
+          };
+        }
+        case 'benchling-entries-author':
+        case 'benchling-entries-timeline': {
+          const entries = await benchlingAPIClient.getEntries();
+          const realData = chartType === 'benchling-entries-author'
+            ? BenchlingDataAdapter.entriesToAuthorChart(entries)
+            : BenchlingDataAdapter.entriesToTimeline(entries);
+          const tableHeaders = ['Title', 'Author', 'Created At'];
+          const tableRows: (string | number)[][] = entries.slice(0, 10).map(e => [
+            e.name,
+            e.authors?.[0]?.name ?? e.creator?.name ?? '—',
+            e.createdAt.slice(0, 10),
+          ]);
+          return {
+            realData,
+            chartMeta: {
+              source: 'Benchling · Notebook Entries',
+              endpoint: `GET ${baseUrl}/api/v2/entries`,
+              recordCount: entries.length,
+              tableHeaders,
+              tableRows,
+              pythonCode: paginatedFetch('entries', '/api/v2/entries'),
+            },
+          };
+        }
+        case 'benchling-dna-lengths': {
+          const sequences = await benchlingAPIClient.getDNASequences();
+          const realData = BenchlingDataAdapter.dnaSequencesToLengthChart(sequences);
+          const tableHeaders = ['Name', 'Length (bp)', 'Circular', 'Created At'];
+          const tableRows: (string | number)[][] = sequences.slice(0, 10).map(s => [
+            s.name,
+            s.length,
+            s.isCircular ? 'Yes' : 'No',
+            s.createdAt.slice(0, 10),
+          ]);
+          return {
+            realData,
+            chartMeta: {
+              source: 'Benchling · DNA Sequences',
+              endpoint: `GET ${baseUrl}/api/v2/dna-sequences`,
+              recordCount: sequences.length,
+              tableHeaders,
+              tableRows,
+              pythonCode: paginatedFetch('dnaSequences', '/api/v2/dna-sequences'),
+            },
+          };
+        }
+        default:
+          return {realData: BenchlingDataAdapter.emptyState('data')};
+      }
+    } catch (err) {
+      console.error('Benchling API error (CORS or network issue):', err);
+      return {realData: BenchlingDataAdapter.emptyState('data')};
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim() || isGenerating) return;
+
+    const capturedInput = inputValue;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
-      content: inputValue,
+      content: capturedInput,
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInputValue('');
     setIsGenerating(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const lowerInput = inputValue.toLowerCase();
-      let response: Message;
+    const lowerInput = capturedInput.toLowerCase();
+    const detectedChartType = detectChartType(capturedInput);
+    console.log('VisualizePage: Input:', capturedInput);
+    console.log('VisualizePage: Detected chart type:', detectedChartType);
 
-      // Try to detect chart type from user input
-      const detectedChartType = detectChartType(inputValue);
-      console.log('VisualizePage: Input:', inputValue);
-      console.log('VisualizePage: Detected chart type:', detectedChartType);
+    let response: Message;
 
-      if (detectedChartType) {
-        // Generate response for detected chart type
-        response = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: generateChartResponse(detectedChartType),
-          visualization: detectedChartType,
-        };
-        setCurrentVisualization(detectedChartType);
-        setChatPanelWidth(25);
-      } else if (lowerInput.includes('recommend') || lowerInput.includes('best') || lowerInput.includes('suggest') || lowerInput.includes('how should')) {
-        response = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: "Based on your data, here are my recommendations:\n\n**For time-series data:** Line charts, control charts, or longitudinal plots\n\n**For comparing groups:** Bar charts, box plots, or violin plots\n\n**For correlations:** Scatter plots, calibration curves, or dose-response curves\n\n**For distributions:** Histograms, box plots, or violin plots\n\n**For omics data:** Heatmaps, volcano plots, PCA, or MA plots\n\n**For plate data:** Plate layout heatmaps\n\n**For clinical data:** Kaplan-Meier curves, forest plots, or longitudinal plots\n\nWhat type of analysis are you trying to perform? Tell me more about your data and I'll suggest the best visualization.",
-        };
-      } else if (lowerInput.includes('data') || lowerInput.includes('source') || lowerInput.includes('using')) {
-        response = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: "I'm currently using data from your connected sources. Click 'View Data' to see the available datasets and their details.\n\nYou can:\n• Select specific columns to visualize\n• Filter the data before charting\n• Aggregate values (sum, average, count)\n\nWhich dataset would you like to work with?",
-          dataPreview: true,
-        };
-        setShowDataPanel(true);
+    if (detectedChartType) {
+      let realData: MockDataResult | undefined;
+      let chartMeta: ChartMeta | undefined;
+
+      // If it's a Benchling chart, fetch real data immediately
+      if (detectedChartType.startsWith('benchling-')) {
+        const fetched = await fetchBenchlingData(detectedChartType);
+        realData = fetched.realData;
+        chartMeta = fetched.chartMeta;
       } else {
-        response = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: "I'd be happy to help you visualize that! I can create many types of scientific charts:\n\n**Core plots:** Line, scatter, bar, box, violin, histogram\n**Statistical:** Error bars, dose-response, ROC curves, forest plots\n**Omics:** Heatmaps, PCA, volcano plots, MA plots\n**Lab operations:** Plate layouts, control charts, throughput plots\n**Chemistry:** Chromatograms, spectra, kinetics plots\n**Clinical:** Longitudinal plots, Kaplan-Meier curves\n\nDescribe what you'd like to visualize, and I'll create the perfect chart!",
-        };
+        // Small delay to simulate AI response for non-Benchling charts
+        await new Promise((resolve) => setTimeout(resolve, 1500));
       }
 
-      setMessages((prev) => [...prev, response]);
-      setIsGenerating(false);
-    }, 1500);
+      response = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: generateChartResponse(detectedChartType),
+        visualization: detectedChartType,
+        realData,
+        chartMeta,
+      };
+      setCurrentVisualization(detectedChartType);
+      setChatPanelWidth(25);
+    } else if (lowerInput.includes('recommend') || lowerInput.includes('best') || lowerInput.includes('suggest') || lowerInput.includes('how should')) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      response = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: "Based on your data, here are my recommendations:\n\n**For time-series data:** Line charts, control charts, or longitudinal plots\n\n**For comparing groups:** Bar charts, box plots, or violin plots\n\n**For correlations:** Scatter plots, calibration curves, or dose-response curves\n\n**For distributions:** Histograms, box plots, or violin plots\n\n**For omics data:** Heatmaps, volcano plots, PCA, or MA plots\n\n**For plate data:** Plate layout heatmaps\n\n**For clinical data:** Kaplan-Meier curves, forest plots, or longitudinal plots\n\nWhat type of analysis are you trying to perform? Tell me more about your data and I'll suggest the best visualization.",
+      };
+    } else if (lowerInput.includes('data') || lowerInput.includes('source') || lowerInput.includes('using')) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      response = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: "I'm currently using data from your connected sources. Click 'View Data' to see the available datasets and their details.\n\nYou can:\n• Select specific columns to visualize\n• Filter the data before charting\n• Aggregate values (sum, average, count)\n\nWhich dataset would you like to work with?",
+        dataPreview: true,
+      };
+      setShowDataPanel(true);
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      response = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: "I'd be happy to help you visualize that! I can create many types of scientific charts:\n\n**Core plots:** Line, scatter, bar, box, violin, histogram\n**Statistical:** Error bars, dose-response, ROC curves, forest plots\n**Omics:** Heatmaps, PCA, volcano plots, MA plots\n**Lab operations:** Plate layouts, control charts, throughput plots\n**Chemistry:** Chromatograms, spectra, kinetics plots\n**Clinical:** Longitudinal plots, Kaplan-Meier curves\n\nDescribe what you'd like to visualize, and I'll create the perfect chart!",
+      };
+    }
+
+    setMessages((prev) => [...prev, response]);
+    setIsGenerating(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -319,8 +487,8 @@ function VisualizePage() {
     }
   };
 
-  const renderVisualization = (type: ChartType) => {
-    return <VisualizationRouter chartType={type} />;
+  const renderVisualization = (type: ChartType, realData?: MockDataResult) => {
+    return <VisualizationRouter chartType={type} realData={realData} />;
   };
 
   const hasVisualization = currentVisualization !== null;
@@ -400,7 +568,7 @@ function VisualizePage() {
               <h3>Visualization output</h3>
             </div>
             <div className="output-panel-content">
-              {renderVisualization(currentVisualization)}
+              {renderVisualization(currentVisualization, currentVizMessage?.realData)}
               <div className="visualization-actions">
                 <div className="viz-actions-left">
                   <button
@@ -500,27 +668,50 @@ function VisualizePage() {
                   <button className="viz-modal-close" onClick={() => setActiveModal(null)}>×</button>
                 </div>
                 <div className="viz-modal-content">
-                  <div className="source-data-table">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Experiment</th>
-                          <th>Sample Count</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr><td>Exp A</td><td>28</td><td>Complete</td></tr>
-                        <tr><td>Exp B</td><td>35</td><td>Complete</td></tr>
-                        <tr><td>Exp C</td><td>45</td><td>Complete</td></tr>
-                        <tr><td>Exp D</td><td>22</td><td>In Progress</td></tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="source-data-info">
-                    <p><strong>Source:</strong> Proteomics Study 3</p>
-                    <p><strong>Records:</strong> 1,247 total • 4 displayed</p>
-                  </div>
+                  {currentVizMessage?.chartMeta ? (
+                    <>
+                      <div className="source-data-table">
+                        <table>
+                          <thead>
+                            <tr>{currentVizMessage.chartMeta.tableHeaders.map(h => <th key={h}>{h}</th>)}</tr>
+                          </thead>
+                          <tbody>
+                            {currentVizMessage.chartMeta.tableRows.map((row, i) => (
+                              <tr key={i}>{row.map((cell, j) => <td key={j}>{cell}</td>)}</tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="source-data-info">
+                        <p><strong>Source:</strong> {currentVizMessage.chartMeta.source}</p>
+                        <p><strong>Records:</strong> {currentVizMessage.chartMeta.recordCount} total · {currentVizMessage.chartMeta.tableRows.length} displayed</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="source-data-table">
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>Experiment</th>
+                              <th>Sample Count</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr><td>Exp A</td><td>28</td><td>Complete</td></tr>
+                            <tr><td>Exp B</td><td>35</td><td>Complete</td></tr>
+                            <tr><td>Exp C</td><td>45</td><td>Complete</td></tr>
+                            <tr><td>Exp D</td><td>22</td><td>In Progress</td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="source-data-info">
+                        <p><strong>Source:</strong> Proteomics Study 3</p>
+                        <p><strong>Records:</strong> 1,247 total • 4 displayed</p>
+                      </div>
+                    </>
+                  )}
                 </div>
               </>
             )}
@@ -531,13 +722,25 @@ function VisualizePage() {
                   <button className="viz-modal-close" onClick={() => setActiveModal(null)}>×</button>
                 </div>
                 <div className="viz-modal-content">
-                  <pre className="source-code-block">{`SELECT experiment_name, COUNT(*) as sample_count
+                  {currentVizMessage?.chartMeta ? (
+                    <>
+                      <pre className="source-code-block">{currentVizMessage.chartMeta.endpoint}</pre>
+                      <div className="source-data-info" style={{ marginTop: '12px' }}>
+                        <p><strong>Auth:</strong> OAuth2 Client Credentials</p>
+                        <p><strong>Records fetched:</strong> {currentVizMessage.chartMeta.recordCount}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <pre className="source-code-block">{`SELECT experiment_name, COUNT(*) as sample_count
 FROM samples
 WHERE study_id = 'proteomics_study_3'
   AND status IN ('Complete', 'In Progress')
 GROUP BY experiment_name
 ORDER BY experiment_name;`}</pre>
-                  <button className="viz-action-btn" style={{ marginTop: '12px' }}><CopyIcon /> Copy query</button>
+                      <button className="viz-action-btn" style={{ marginTop: '12px' }}><CopyIcon /> Copy query</button>
+                    </>
+                  )}
                 </div>
               </>
             )}
@@ -548,7 +751,18 @@ ORDER BY experiment_name;`}</pre>
                   <button className="viz-modal-close" onClick={() => setActiveModal(null)}>×</button>
                 </div>
                 <div className="viz-modal-content">
-                  <pre className="source-code-block">{`import pandas as pd
+                  {currentVizMessage?.chartMeta ? (
+                    <>
+                      <pre className="source-code-block">{currentVizMessage.chartMeta.pythonCode}</pre>
+                      <button
+                        className="viz-action-btn"
+                        style={{ marginTop: '12px' }}
+                        onClick={() => navigator.clipboard.writeText(currentVizMessage!.chartMeta!.pythonCode)}
+                      ><CopyIcon /> Copy code</button>
+                    </>
+                  ) : (
+                    <>
+                      <pre className="source-code-block">{`import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load data from TDP
@@ -567,7 +781,9 @@ ax.set_ylabel('Sample Count')
 ax.set_title('Sample Counts by Experiment')
 plt.tight_layout()
 plt.show()`}</pre>
-                  <button className="viz-action-btn" style={{ marginTop: '12px' }}><CopyIcon /> Copy code</button>
+                      <button className="viz-action-btn" style={{ marginTop: '12px' }}><CopyIcon /> Copy code</button>
+                    </>
+                  )}
                 </div>
               </>
             )}

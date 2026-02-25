@@ -165,6 +165,21 @@ export const generateChartResponse = (chartType: ChartType): string => {
 			"I've generated a Sashimi plot showing exon coverage with splice junction arcs. Alternative splicing events are visible.\n\nI can:\n• Show junction read counts?\n• Compare across conditions?\n• Highlight novel junctions?",
 		'assembly-graph':
 			"Here's an assembly graph showing contigs and their connections. This helps visualize genome assembly complexity.\n\nWould you like to:\n• Color by coverage?\n• Show repeat regions?\n• Simplify the graph?",
+		// Benchling integration
+		'benchling-assay-scatter':
+			"I'm fetching your assay results from Benchling and rendering a scatter plot of cell population frequencies over time.\n\nWould you like to:\n• Filter by specific population?\n• Adjust the date range?\n• Overlay a trendline?",
+		'benchling-assay-bar':
+			"Here's a bar chart showing average frequency per population from your Benchling assay data.\n\nOptions:\n• Sort bars by value?\n• Show individual data points?\n• Compare across assay schemas?",
+		'benchling-inventory-timeline':
+			"I've pulled your Benchling inventory and charted container creation by month. This shows how your inventory has grown over time.\n\nWould you like to:\n• Filter by container type?\n• Show cumulative total?\n• Break down by project?",
+		'benchling-inventory-status':
+			"Here's a pie chart of your Benchling containers by checkout status. You can see what's available vs. checked out at a glance.\n\nOptions:\n• Show as bar chart instead?\n• Filter by location?\n• Break down by container type?",
+		'benchling-entries-author':
+			"I've fetched your Benchling notebook entries and grouped them by author. This shows contribution patterns across your team.\n\nWould you like to:\n• Filter by date range?\n• Break down by project?\n• Show entries over time?",
+		'benchling-entries-timeline':
+			"Here's a timeline of your Benchling notebook entries by month. You can see experiment activity patterns clearly.\n\nOptions:\n• Show cumulative total?\n• Color by author?\n• Filter by entry type?",
+		'benchling-dna-lengths':
+			"I've pulled your Benchling DNA sequences and charted them by length in base pairs.\n\nWould you like to:\n• Filter by sequence type?\n• Show only annotated sequences?\n• Group by schema?",
 		circos:
 			"I've created a Circos plot showing genomic relationships in a circular layout. Links between regions are clearly displayed.\n\nOptions:\n• Add additional data tracks?\n• Adjust link transparency?\n• Show specific chromosomes?",
 	};

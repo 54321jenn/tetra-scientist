@@ -73,14 +73,22 @@ export type ChartType =
 	| 'motif-heatmap'
 	| 'manhattan-plot'
 	| 'sashimi-plot'
-	| 'assembly-graph';
+	| 'assembly-graph'
+	// Benchling integration
+	| 'benchling-assay-scatter'
+	| 'benchling-assay-bar'
+	| 'benchling-inventory-timeline'
+	| 'benchling-inventory-status'
+	| 'benchling-entries-author'
+	| 'benchling-entries-timeline'
+	| 'benchling-dna-lengths';
 
 export interface ChartConfig {
 	type: ChartType;
 	title: string;
 	description: string;
 	keywords: string[];
-	category: 'core' | 'experimental' | 'omics' | 'assay' | 'chemistry' | 'clinical' | 'spatial' | 'other';
+	category: 'core' | 'experimental' | 'omics' | 'assay' | 'chemistry' | 'clinical' | 'spatial' | 'other' | 'benchling';
 	library: VisualizationLibrary;
 }
 
@@ -583,6 +591,63 @@ export const CHART_CONFIGS: Record<ChartType, ChartConfig> = {
 		keywords: ['assembly', 'graph', 'contig', 'de bruijn', 'transcript assembly'],
 		category: 'omics',
 		library: 'igv',
+	},
+	// Benchling integration
+	'benchling-assay-scatter': {
+		type: 'benchling-assay-scatter',
+		title: 'Benchling Assay Scatter',
+		description: 'Scatter plot of assay results from Benchling, colored by population',
+		keywords: ['assay', 'assay results', 'flowjo', 'cell population', 'frequency', 'benchling assay', 'assay scatter', 'benchling frequency'],
+		category: 'benchling',
+		library: 'plotly',
+	},
+	'benchling-assay-bar': {
+		type: 'benchling-assay-bar',
+		title: 'Benchling Assay Bar',
+		description: 'Bar chart of average assay results by population from Benchling',
+		keywords: ['assay bar', 'assay average', 'population frequency', 'assay summary', 'benchling bar', 'assay comparison'],
+		category: 'benchling',
+		library: 'plotly',
+	},
+	'benchling-inventory-timeline': {
+		type: 'benchling-inventory-timeline',
+		title: 'Benchling Inventory Timeline',
+		description: 'Timeline of containers created in Benchling inventory',
+		keywords: ['inventory', 'container', 'containers', 'benchling inventory', 'inventory timeline', 'inventory trend', 'well plate'],
+		category: 'benchling',
+		library: 'plotly',
+	},
+	'benchling-inventory-status': {
+		type: 'benchling-inventory-status',
+		title: 'Benchling Inventory Status',
+		description: 'Pie chart showing Benchling container checkout status',
+		keywords: ['container status', 'inventory status', 'checkout', 'available', 'benchling containers', 'inventory availability'],
+		category: 'benchling',
+		library: 'plotly',
+	},
+	'benchling-entries-author': {
+		type: 'benchling-entries-author',
+		title: 'Benchling Entries by Author',
+		description: 'Bar chart of notebook entries grouped by author in Benchling',
+		keywords: ['notebook', 'notebook entries', 'entries by author', 'author', 'benchling notebook', 'lab notebook', 'experiment entries'],
+		category: 'benchling',
+		library: 'plotly',
+	},
+	'benchling-entries-timeline': {
+		type: 'benchling-entries-timeline',
+		title: 'Benchling Entries Timeline',
+		description: 'Timeline of notebook entries created in Benchling',
+		keywords: ['notebook timeline', 'entries timeline', 'notebook history', 'benchling entries', 'experiment timeline', 'entry history'],
+		category: 'benchling',
+		library: 'plotly',
+	},
+	'benchling-dna-lengths': {
+		type: 'benchling-dna-lengths',
+		title: 'Benchling DNA Lengths',
+		description: 'Bar chart of DNA sequence lengths from Benchling registry',
+		keywords: ['dna sequences', 'dna length', 'sequence length', 'base pairs', 'benchling dna', 'benchling sequences', 'dna registry'],
+		category: 'benchling',
+		library: 'plotly',
 	},
 };
 
