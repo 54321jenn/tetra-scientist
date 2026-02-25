@@ -921,7 +921,6 @@ export const DATA_GENERATORS: Record<ChartType, () => MockDataResult> = {
 	'manhattan-plot': generateManhattanPlotData,
 	'sashimi-plot': generateCoverageTrackData, // Coverage with splice junctions
 	'assembly-graph': generateChemicalSpaceData, // Network graph (simplified)
-	circos: generateHeatmapData, // Circular plot (simplified as heatmap)
 };
 
 export const getMockDataForChart = (chartType: ChartType): MockDataResult => {

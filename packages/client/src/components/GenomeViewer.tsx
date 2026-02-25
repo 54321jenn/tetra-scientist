@@ -47,9 +47,6 @@ const GenomeViewer = ({chartType, title, className}: GenomeViewerProps) => {
 					case 'assembly-graph':
 						renderAssemblyGraph(containerRef.current);
 						break;
-					case 'circos':
-						renderCircos(containerRef.current);
-						break;
 					default:
 						renderPlaceholder(chartType, containerRef.current);
 				}
@@ -392,71 +389,6 @@ const renderAssemblyGraph = (container: HTMLElement) => {
 		</div>
 	`;
 };
-
-const renderCircos = (container: HTMLElement) => {
-	const width = 500;
-	const height = 500;
-	const centerX = width / 2;
-	const centerY = height / 2;
-	const outerRadius = 200;
-	const innerRadius = 160;
-
-	// Chromosomes
-	const chromosomes = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-	const anglePerChr = (2 * Math.PI) / chromosomes.length;
-
-	let chrArcs = '';
-	let links = '';
-
-	chromosomes.forEach((chr, i) => {
-		const startAngle = i * anglePerChr;
-		const endAngle = (i + 1) * anglePerChr;
-		const color = i % 2 === 0 ? '#3498db' : '#2ecc71';
-
-		const x1 = centerX + outerRadius * Math.cos(startAngle);
-		const y1 = centerY + outerRadius * Math.sin(startAngle);
-		const x2 = centerX + outerRadius * Math.cos(endAngle);
-		const y2 = centerY + outerRadius * Math.sin(endAngle);
-
-		chrArcs += `
-			<path d="M ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 0 1 ${x2} ${y2} L ${centerX + innerRadius * Math.cos(endAngle)} ${centerY + innerRadius * Math.sin(endAngle)} A ${innerRadius} ${innerRadius} 0 0 0 ${centerX + innerRadius * Math.cos(startAngle)} ${centerY + innerRadius * Math.sin(startAngle)} Z" fill="${color}" opacity="0.7" stroke="#fff" stroke-width="2"/>
-			<text x="${centerX + (outerRadius + 15) * Math.cos(startAngle + anglePerChr/2)}" y="${centerY + (outerRadius + 15) * Math.sin(startAngle + anglePerChr/2)}" text-anchor="middle" font-size="12" fill="#666">${chr}</text>
-		`;
-	});
-
-	// Add some random links between chromosomes
-	for (let i = 0; i < 5; i++) {
-		const chr1 = Math.floor(Math.random() * chromosomes.length);
-		const chr2 = Math.floor(Math.random() * chromosomes.length);
-		if (chr1 !== chr2) {
-			const angle1 = chr1 * anglePerChr + anglePerChr / 2;
-			const angle2 = chr2 * anglePerChr + anglePerChr / 2;
-			const x1 = centerX + innerRadius * Math.cos(angle1);
-			const y1 = centerY + innerRadius * Math.sin(angle1);
-			const x2 = centerX + innerRadius * Math.cos(angle2);
-			const y2 = centerY + innerRadius * Math.sin(angle2);
-
-			links += `<path d="M ${x1} ${y1} Q ${centerX} ${centerY} ${x2} ${y2}" fill="none" stroke="#e74c3c" stroke-width="1.5" opacity="0.4"/>`;
-		}
-	}
-
-	container.innerHTML = `
-		<div style="padding: 20px;">
-			<h4 style="text-align: center; margin-bottom: 20px; color: #333;">Circos Plot</h4>
-			<div style="display: flex; justify-content: center;">
-				<svg width="${width}" height="${height}">
-					${chrArcs}
-					${links}
-				</svg>
-			</div>
-			<div style="margin-top: 15px; text-align: center;">
-				<p style="font-size: 12px; color: #666; margin: 0;">Circular genomic visualization showing chromosomal relationships and features</p>
-			</div>
-		</div>
-	`;
-};
-
-
 
 const renderPlaceholder = (chartType: ChartType, container: HTMLElement) => {
 	const placeholders: Record<string, {title: string; description: string; icon: string}> = {

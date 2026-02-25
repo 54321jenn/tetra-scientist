@@ -46,8 +46,8 @@ const ChemicalStructureViewer = ({chartType, title, className}: ChemicalStructur
 
 				// Try to load RDKit for structure-based visualizations
 				try {
-					const initRDKitModule = (await import('@rdkit/rdkit')).default;
-					const RDKit = await initRDKitModule();
+					await import('@rdkit/rdkit');
+					const RDKit = await (window as any).initRDKitModule();
 
 					// Generate mock SMILES based on chart type
 					const smiles = getMockSMILES(chartType);
