@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import FilterCard, { FilterCardRef } from '../components/FilterCard';
 import SearchAssistant from '../components/SearchAssistant';
+import { useToolbar } from '../contexts/ToolbarContext';
 import './SearchPage.css';
 
 // Icon components
@@ -34,6 +35,14 @@ const MoreIcon = () => (
   </svg>
 );
 
+const UploadIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="17 8 12 3 7 8"></polyline>
+    <line x1="12" y1="3" x2="12" y2="15"></line>
+  </svg>
+);
+
 interface SearchItem {
   icon: JSX.Element;
   title: string;
@@ -42,11 +51,27 @@ interface SearchItem {
 
 function SearchPage() {
   const navigate = useNavigate();
+  const { setRightActions } = useToolbar();
   const [showFilterView, setShowFilterView] = useState(false);
   const [showAssistant, setShowAssistant] = useState(false);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [lastRemovedFilter, setLastRemovedFilter] = useState<string | null>(null);
   const filterCardRef = useRef<FilterCardRef>(null);
+
+  // Set toolbar actions
+  useEffect(() => {
+    setRightActions(
+      <button
+        className="toolbar-upload-btn"
+        onClick={() => navigate('/upload')}
+      >
+        <UploadIcon />
+        <span>Upload</span>
+      </button>
+    );
+
+    return () => setRightActions(null);
+  }, [setRightActions, navigate]);
 
   // Poll for active filters when assistant is open
   useEffect(() => {

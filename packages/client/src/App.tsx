@@ -10,6 +10,7 @@ import SearchResultsPage from './pages/SearchResultsPage';
 import FileDetailsPage from './pages/FileDetailsPage';
 import AppsPage from './pages/AppsPage';
 import VisualizePage from './pages/VisualizePage';
+import UploadPage from './pages/UploadPage';
 import ITSearchPage from './pages/ITSearchPage';
 import PersonaSelectPage from './pages/PersonaSelectPage';
 
@@ -38,6 +39,7 @@ function AppRoutes() {
           <Route path="details/:id" element={<FileDetailsPage />} />
           <Route path="apps" element={<AppsPage />} />
           <Route path="visualize" element={<VisualizePage />} />
+          <Route path="upload" element={<UploadPage />} />
         </Route>
       )}
 
