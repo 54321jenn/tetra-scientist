@@ -231,8 +231,6 @@ function DataTablePage() {
 
   return (
     <div className="data-table-page">
-      <h1 className="page-title">My Data</h1>
-
       <div className="data-table-content">
         <CustomTable
           data={dataWithActions}
