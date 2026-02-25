@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useToolbar } from '../contexts/ToolbarContext';
+import VisualizationRouter from '../components/VisualizationRouter';
+import type { ChartType } from '../types/visualizations';
+import { detectChartType, generateChartResponse } from '../utils/chartDetection';
 import './VisualizePage.css';
 
 // Icon components
@@ -76,12 +79,66 @@ const ChartIcon = () => (
   </svg>
 );
 
+const ThumbsUpIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M2 20h2c.55 0 1-.45 1-1v-9c0-.55-.45-1-1-1H2v11zm19.83-7.12c.11-.25.17-.52.17-.8V11c0-1.1-.9-2-2-2h-5.5l.92-4.65c.05-.22.02-.46-.08-.66a2.1 2.1 0 0 0-.88-1.22L14 2 7.59 8.41C7.21 8.79 7 9.3 7 9.83v7.84C7 18.95 8.05 20 9.34 20h8.11c.7 0 1.36-.37 1.72-.97l2.66-6.15z"/>
+  </svg>
+);
+
+const ThumbsDownIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M22 4h-2c-.55 0-1 .45-1 1v9c0 .55.45 1 1 1h2V4zM2.17 11.12c-.11.25-.17.52-.17.8V13c0 1.1.9 2 2 2h5.5l-.92 4.65c-.05.22-.02.46.08.66.23.45.52.86.88 1.22L10 22l6.41-6.41c.38-.38.59-.89.59-1.42V6.34C17 5.05 15.95 4 14.66 4H6.55c-.7 0-1.36.37-1.72.97l-2.66 6.15z"/>
+  </svg>
+);
+
+const DatabaseIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+  </svg>
+);
+
+const CodeIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="16 18 22 12 16 6"></polyline>
+    <polyline points="8 6 2 12 8 18"></polyline>
+  </svg>
+);
+
+const QueryIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <line x1="10" y1="9" x2="8" y2="9"></line>
+  </svg>
+);
+
+const SaveIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+    <polyline points="7 3 7 8 15 8"></polyline>
+  </svg>
+);
+
+const MoreIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="1"></circle>
+    <circle cx="19" cy="12" r="1"></circle>
+    <circle cx="5" cy="12" r="1"></circle>
+  </svg>
+);
+
 interface Message {
   id: string;
   type: 'user' | 'assistant';
   content: string;
-  visualization?: 'bar' | 'line' | 'scatter' | 'pie';
+  visualization?: ChartType;
   dataPreview?: boolean;
+  rating?: 'up' | 'down' | null;
 }
 
 interface DataSource {
@@ -96,16 +153,21 @@ function VisualizePage() {
     {
       id: '1',
       type: 'assistant',
-      content: "Hello! I'm your data visualization assistant. Describe what you'd like to visualize, and I'll help you create charts and graphs from your data. You can say things like:\n\n• \"Show me a bar chart of sample counts by experiment\"\n• \"Create a line graph of temperature over time\"\n• \"What's the best way to visualize protein concentration data?\"\n\nWhat would you like to visualize today?",
+      content: "Hello! I'm your data visualization assistant. I can create a wide variety of scientific charts and plots. Here are some examples:\n\n**Core plots:** \"Show me a line chart of temperature over time\" • \"Create a scatter plot for calibration\" • \"Make a box plot of assay variability\"\n\n**Statistical:** \"Generate a dose-response curve\" • \"Show ROC curve for classification\" • \"Create error bars with significance\"\n\n**Omics:** \"Make a heatmap of expression data\" • \"Show PCA clustering\" • \"Create a volcano plot\" • \"Display Manhattan plot for GWAS\"\n\n**Lab operations:** \"Display plate layout\" • \"Show control chart for QC\" • \"Plot throughput over time\"\n\n**Chemistry:** \"Show chromatogram\" • \"Display UV-Vis spectrum\" • \"Create kinetics plot\"\n\n**Chemical compounds:** \"Show 2D chemical structure\" • \"Display chemical space map\" • \"Create property plot (LogP vs MW)\" • \"Show structure-activity heatmap\"\n\n**Proteins:** \"Display 3D protein structure\" • \"Show domain architecture\" • \"Create contact map\" • \"Display binding site\"\n\n**DNA/RNA:** \"Show genome track\" • \"Display coverage track\" • \"Create sequence logo\" • \"Show Sashimi plot for splicing\"\n\n**Clinical:** \"Make Kaplan-Meier curve\" • \"Show longitudinal biomarker data\"\n\nWhat would you like to visualize today?",
     },
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showDataPanel, setShowDataPanel] = useState(false);
-  const [currentVisualization, setCurrentVisualization] = useState<'bar' | 'line' | 'scatter' | 'pie' | null>(null);
-  const [showVizSidesheet, setShowVizSidesheet] = useState(false);
+  const [currentVisualization, setCurrentVisualization] = useState<ChartType | null>(null);
+  const [activeModal, setActiveModal] = useState<'data' | 'query' | 'code' | 'save' | null>(null);
+  const [selectedVizId, setSelectedVizId] = useState<string | null>(null);
+  const [saveFeedback, setSaveFeedback] = useState<string | null>(null);
+  const [chatPanelWidth, setChatPanelWidth] = useState(100); // percentage
+  const [isResizing, setIsResizing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const dataSources: DataSource[] = [
     { name: 'Proteomics Study 3', type: 'Dataset', records: 1247 },
@@ -113,9 +175,60 @@ function VisualizePage() {
     { name: 'Sample Measurements', type: 'Excel', records: 456 },
   ];
 
+  const mockDashboards = [
+    { id: '1', name: 'Pipeline Overview' },
+    { id: '2', name: 'Experiment Analysis' },
+    { id: '3', name: 'Lab Metrics' },
+  ];
+
+  const handleRating = (messageId: string, rating: 'up' | 'down') => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId ? { ...msg, rating: msg.rating === rating ? null : rating } : msg
+      )
+    );
+  };
+
+  const handleSaveToDashboard = (dashboardId: string, dashboardName: string) => {
+    setSaveFeedback(`Saved to "${dashboardName}"!`);
+    setActiveModal(null);
+    setTimeout(() => setSaveFeedback(null), 3000);
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Get the current visualization from messages
+  const currentViz = messages.find(m => m.visualization)?.visualization || null;
+  const currentVizMessage = messages.find(m => m.visualization);
+
+  // Resize panel handlers
+  const handleMouseDown = () => {
+    setIsResizing(true);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isResizing || !containerRef.current) return;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+    setChatPanelWidth(Math.min(Math.max(newWidth, 15), 85)); // 15-85% range
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(false);
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isResizing]);
 
   useEffect(() => {
     scrollToBottom();
@@ -126,17 +239,17 @@ function VisualizePage() {
     setRightActions(
       <button
         className="toolbar-chart-btn"
-        onClick={() => setShowVizSidesheet(!showVizSidesheet)}
+        onClick={() => setChatPanelWidth(chatPanelWidth < 50 ? 100 : 25)}
         disabled={!currentVisualization}
-        title={showVizSidesheet ? 'Hide chart' : 'Show chart'}
+        title={chatPanelWidth < 50 ? 'Hide chart' : 'Show chart'}
       >
         <ChartIcon />
-        <span>{showVizSidesheet ? 'Hide chart' : 'Show chart'}</span>
+        <span>{chatPanelWidth < 50 ? 'Hide chart' : 'Show chart'}</span>
       </button>
     );
 
     return () => setRightActions(null);
-  }, [setRightActions, currentVisualization, showVizSidesheet]);
+  }, [setRightActions, currentVisualization, chatPanelWidth]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,47 +270,26 @@ function VisualizePage() {
       const lowerInput = inputValue.toLowerCase();
       let response: Message;
 
-      if (lowerInput.includes('bar') || lowerInput.includes('count') || lowerInput.includes('compare')) {
+      // Try to detect chart type from user input
+      const detectedChartType = detectChartType(inputValue);
+      console.log('VisualizePage: Input:', inputValue);
+      console.log('VisualizePage: Detected chart type:', detectedChartType);
+
+      if (detectedChartType) {
+        // Generate response for detected chart type
         response = {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: "I've created a bar chart showing the sample counts by experiment. The data is pulled from your Proteomics Study 3 dataset. You can see that Experiment C has the highest count at 45 samples.\n\nWould you like me to:\n• Add error bars to show standard deviation?\n• Change the color scheme?\n• Sort the bars by value?",
-          visualization: 'bar',
+          content: generateChartResponse(detectedChartType),
+          visualization: detectedChartType,
         };
-        setCurrentVisualization('bar');
-        setShowVizSidesheet(true);
-      } else if (lowerInput.includes('line') || lowerInput.includes('time') || lowerInput.includes('trend')) {
-        response = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: "Here's a line chart showing the temperature readings over time. The data spans 7 days and shows a clear upward trend with some daily variation.\n\nI can help you:\n• Add a trendline to highlight the pattern\n• Show confidence intervals\n• Compare with another time series",
-          visualization: 'line',
-        };
-        setCurrentVisualization('line');
-        setShowVizSidesheet(true);
-      } else if (lowerInput.includes('scatter') || lowerInput.includes('correlation') || lowerInput.includes('relationship')) {
-        response = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: "I've generated a scatter plot showing the relationship between concentration and response. There appears to be a positive correlation (r = 0.82).\n\nWould you like me to:\n• Add a regression line?\n• Color points by sample group?\n• Identify outliers?",
-          visualization: 'scatter',
-        };
-        setCurrentVisualization('scatter');
-        setShowVizSidesheet(true);
-      } else if (lowerInput.includes('pie') || lowerInput.includes('proportion') || lowerInput.includes('percentage') || lowerInput.includes('distribution')) {
-        response = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: "Here's a pie chart showing the distribution of sample types in your dataset. The majority (42%) are Type A samples.\n\nI can also:\n• Convert this to a donut chart\n• Show as a stacked bar instead\n• Add percentage labels",
-          visualization: 'pie',
-        };
-        setCurrentVisualization('pie');
-        setShowVizSidesheet(true);
+        setCurrentVisualization(detectedChartType);
+        setChatPanelWidth(25);
       } else if (lowerInput.includes('recommend') || lowerInput.includes('best') || lowerInput.includes('suggest') || lowerInput.includes('how should')) {
         response = {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: "Based on your data, here are my recommendations:\n\n**For comparing categories:** Use a bar chart - great for showing differences between groups\n\n**For trends over time:** Use a line chart - ideal for temporal patterns\n\n**For relationships:** Use a scatter plot - shows correlations between variables\n\n**For proportions:** Use a pie chart - best for showing parts of a whole\n\nWhat type of comparison are you trying to make? Tell me more about your data and I'll suggest the best visualization.",
+          content: "Based on your data, here are my recommendations:\n\n**For time-series data:** Line charts, control charts, or longitudinal plots\n\n**For comparing groups:** Bar charts, box plots, or violin plots\n\n**For correlations:** Scatter plots, calibration curves, or dose-response curves\n\n**For distributions:** Histograms, box plots, or violin plots\n\n**For omics data:** Heatmaps, volcano plots, PCA, or MA plots\n\n**For plate data:** Plate layout heatmaps\n\n**For clinical data:** Kaplan-Meier curves, forest plots, or longitudinal plots\n\nWhat type of analysis are you trying to perform? Tell me more about your data and I'll suggest the best visualization.",
         };
       } else if (lowerInput.includes('data') || lowerInput.includes('source') || lowerInput.includes('using')) {
         response = {
@@ -211,7 +303,7 @@ function VisualizePage() {
         response = {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: "I'd be happy to help you visualize that! To create the best chart, could you tell me:\n\n1. What type of chart would you like? (bar, line, scatter, pie)\n2. What data should be on each axis?\n3. Do you want to group or color by any category?\n\nOr just describe what insight you're looking for, and I'll recommend the best approach!",
+          content: "I'd be happy to help you visualize that! I can create many types of scientific charts:\n\n**Core plots:** Line, scatter, bar, box, violin, histogram\n**Statistical:** Error bars, dose-response, ROC curves, forest plots\n**Omics:** Heatmaps, PCA, volcano plots, MA plots\n**Lab operations:** Plate layouts, control charts, throughput plots\n**Chemistry:** Chromatograms, spectra, kinetics plots\n**Clinical:** Longitudinal plots, Kaplan-Meier curves\n\nDescribe what you'd like to visualize, and I'll create the perfect chart!",
         };
       }
 
@@ -227,106 +319,19 @@ function VisualizePage() {
     }
   };
 
-  const renderVisualization = (type: 'bar' | 'line' | 'scatter' | 'pie') => {
-    const chartColors = {
-      primary: '#1976D2',
-      secondary: '#42A5F5',
-      tertiary: '#64B5F6',
-      quaternary: '#90CAF9',
-    };
-
-    switch (type) {
-      case 'bar':
-        return (
-          <div className="chart-container">
-            <div className="chart-title">Sample Counts by Experiment</div>
-            <div className="bar-chart">
-              <div className="bar-group">
-                <div className="bar" style={{ height: '60%', backgroundColor: chartColors.primary }}></div>
-                <span className="bar-label">Exp A</span>
-                <span className="bar-value">28</span>
-              </div>
-              <div className="bar-group">
-                <div className="bar" style={{ height: '75%', backgroundColor: chartColors.secondary }}></div>
-                <span className="bar-label">Exp B</span>
-                <span className="bar-value">35</span>
-              </div>
-              <div className="bar-group">
-                <div className="bar" style={{ height: '95%', backgroundColor: chartColors.tertiary }}></div>
-                <span className="bar-label">Exp C</span>
-                <span className="bar-value">45</span>
-              </div>
-              <div className="bar-group">
-                <div className="bar" style={{ height: '50%', backgroundColor: chartColors.quaternary }}></div>
-                <span className="bar-label">Exp D</span>
-                <span className="bar-value">22</span>
-              </div>
-            </div>
-          </div>
-        );
-      case 'line':
-        return (
-          <div className="chart-container">
-            <div className="chart-title">Temperature Over Time</div>
-            <div className="line-chart">
-              <svg viewBox="0 0 300 150" className="line-svg">
-                <polyline
-                  fill="none"
-                  stroke={chartColors.primary}
-                  strokeWidth="3"
-                  points="20,120 60,100 100,110 140,80 180,70 220,50 260,30"
-                />
-                <g className="data-points">
-                  {[[20,120], [60,100], [100,110], [140,80], [180,70], [220,50], [260,30]].map(([x, y], i) => (
-                    <circle key={i} cx={x} cy={y} r="5" fill={chartColors.primary} />
-                  ))}
-                </g>
-              </svg>
-              <div className="line-labels">
-                <span>Day 1</span><span>Day 2</span><span>Day 3</span><span>Day 4</span><span>Day 5</span><span>Day 6</span><span>Day 7</span>
-              </div>
-            </div>
-          </div>
-        );
-      case 'scatter':
-        return (
-          <div className="chart-container">
-            <div className="chart-title">Concentration vs Response</div>
-            <div className="scatter-chart">
-              <svg viewBox="0 0 300 200" className="scatter-svg">
-                {[[30,160], [50,140], [70,130], [90,110], [110,100], [130,85], [150,80], [170,65], [190,55], [210,45], [230,35], [250,25]].map(([x, y], i) => (
-                  <circle key={i} cx={x} cy={y} r="8" fill={chartColors.primary} opacity="0.7" />
-                ))}
-                <line x1="20" y1="170" x2="270" y2="20" stroke={chartColors.secondary} strokeWidth="2" strokeDasharray="5,5" />
-              </svg>
-            </div>
-          </div>
-        );
-      case 'pie':
-        return (
-          <div className="chart-container">
-            <div className="chart-title">Sample Type Distribution</div>
-            <div className="pie-chart">
-              <svg viewBox="0 0 200 200" className="pie-svg">
-                <circle cx="100" cy="100" r="80" fill="transparent" stroke={chartColors.primary} strokeWidth="40" strokeDasharray="151 252" strokeDashoffset="0" />
-                <circle cx="100" cy="100" r="80" fill="transparent" stroke={chartColors.secondary} strokeWidth="40" strokeDasharray="88 252" strokeDashoffset="-151" />
-                <circle cx="100" cy="100" r="80" fill="transparent" stroke={chartColors.tertiary} strokeWidth="40" strokeDasharray="63 252" strokeDashoffset="-239" />
-              </svg>
-              <div className="pie-legend">
-                <div className="legend-item"><span className="legend-color" style={{ backgroundColor: chartColors.primary }}></span>Type A (42%)</div>
-                <div className="legend-item"><span className="legend-color" style={{ backgroundColor: chartColors.secondary }}></span>Type B (35%)</div>
-                <div className="legend-item"><span className="legend-color" style={{ backgroundColor: chartColors.tertiary }}></span>Type C (23%)</div>
-              </div>
-            </div>
-          </div>
-        );
-    }
+  const renderVisualization = (type: ChartType) => {
+    return <VisualizationRouter chartType={type} />;
   };
 
+  const hasVisualization = currentVisualization !== null;
+
   return (
-    <div className={`visualize-page ${showVizSidesheet ? 'sidesheet-open' : ''}`}>
+    <div className={`visualize-page ${isResizing ? 'resizing' : ''}`} ref={containerRef}>
       <div className="visualize-content">
-        <div className="chat-panel">
+        <div
+          className="chat-panel"
+          style={{ width: hasVisualization ? `${chatPanelWidth}%` : '100%' }}
+        >
           <div className="messages-container">
             {messages.map((message) => (
               <div key={message.id} className={`message ${message.type}`}>
@@ -338,22 +343,8 @@ function VisualizePage() {
                 <div className="message-content">
                   <div className="message-text">{message.content}</div>
                   {message.visualization && (
-                    <div className="message-visualization">
-                      {renderVisualization(message.visualization)}
-                      <div className="visualization-actions">
-                        <button className="viz-action-btn" title="Share with colleague">
-                          <ShareIcon /> Share
-                        </button>
-                        <button className="viz-action-btn" title="Copy to clipboard">
-                          <CopyIcon /> Copy
-                        </button>
-                        <button className="viz-action-btn" title="Export as image">
-                          <DownloadIcon /> Export
-                        </button>
-                        <button className="viz-action-btn primary" title="Send to ELN">
-                          <NotebookIcon /> Send to ELN
-                        </button>
-                      </div>
+                    <div className="viz-indicator">
+                      <ChartIcon /> Visualization rendered in output panel →
                     </div>
                   )}
                   {message.dataPreview && (
@@ -395,6 +386,80 @@ function VisualizePage() {
           </form>
         </div>
 
+        {/* Resize Handle */}
+        {hasVisualization && (
+          <div className="resize-handle" onMouseDown={handleMouseDown}>
+            <div className="resize-handle-bar"></div>
+          </div>
+        )}
+
+        {/* Output Panel */}
+        {hasVisualization && currentVizMessage && (
+          <div className="output-panel" style={{ width: `${100 - chatPanelWidth}%` }}>
+            <div className="output-panel-header">
+              <h3>Visualization output</h3>
+            </div>
+            <div className="output-panel-content">
+              {renderVisualization(currentVisualization)}
+              <div className="visualization-actions">
+                <div className="viz-actions-left">
+                  <button
+                    className={`viz-rating-btn ${currentVizMessage.rating === 'up' ? 'active' : ''}`}
+                    onClick={() => handleRating(currentVizMessage.id, 'up')}
+                    title="Good response"
+                  >
+                    <ThumbsUpIcon />
+                  </button>
+                  <button
+                    className={`viz-rating-btn ${currentVizMessage.rating === 'down' ? 'active' : ''}`}
+                    onClick={() => handleRating(currentVizMessage.id, 'down')}
+                    title="Poor response"
+                  >
+                    <ThumbsDownIcon />
+                  </button>
+                  <span className="viz-actions-divider"></span>
+                  <button
+                    className="viz-action-btn"
+                    onClick={() => { setSelectedVizId(currentVizMessage.id); setActiveModal('data'); }}
+                    title="View source data"
+                  >
+                    <DatabaseIcon /> Data
+                  </button>
+                  <button
+                    className="viz-action-btn"
+                    onClick={() => { setSelectedVizId(currentVizMessage.id); setActiveModal('query'); }}
+                    title="View source query"
+                  >
+                    <QueryIcon /> Query
+                  </button>
+                  <button
+                    className="viz-action-btn"
+                    onClick={() => { setSelectedVizId(currentVizMessage.id); setActiveModal('code'); }}
+                    title="View plot code"
+                  >
+                    <CodeIcon /> Code
+                  </button>
+                </div>
+                <div className="viz-actions-right">
+                  <button className="viz-action-btn" title="Share"><ShareIcon /></button>
+                  <button className="viz-action-btn" title="Copy"><CopyIcon /></button>
+                  <button className="viz-action-btn" title="Export"><DownloadIcon /></button>
+                  <button
+                    className="viz-action-btn primary"
+                    onClick={() => { setSelectedVizId(currentVizMessage.id); setActiveModal('save'); }}
+                    title="Save to dashboard"
+                  >
+                    <SaveIcon /> Save
+                  </button>
+                  <button className="viz-action-btn more-btn" title="More actions">
+                    <MoreIcon />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {showDataPanel && (
           <div className="data-panel">
             <div className="data-panel-header">
@@ -419,30 +484,118 @@ function VisualizePage() {
         )}
       </div>
 
-      {/* Visualization Sidesheet - Push State */}
-      <div className={`current-viz-panel ${showVizSidesheet ? 'open' : ''}`}>
-        <div className="current-viz-header">
-          <h3>Current visualization</h3>
-          <div className="current-viz-header-actions">
-            <div className="viz-toolbar">
-              <button className="viz-action-btn" title="Share"><ShareIcon /></button>
-              <button className="viz-action-btn" title="Copy"><CopyIcon /></button>
-              <button className="viz-action-btn" title="Export"><DownloadIcon /></button>
-              <button className="viz-action-btn primary" title="Send to ELN"><NotebookIcon /></button>
-            </div>
-            <button
-              className="close-viz-btn"
-              onClick={() => setShowVizSidesheet(false)}
-              aria-label="Close visualization"
-            >
-              <CloseIcon />
-            </button>
+      {/* Save feedback toast */}
+      {saveFeedback && (
+        <div className="save-feedback-toast">{saveFeedback}</div>
+      )}
+
+      {/* Modals */}
+      {activeModal && (
+        <div className="viz-modal-overlay" onClick={() => setActiveModal(null)}>
+          <div className="viz-modal" onClick={(e) => e.stopPropagation()}>
+            {activeModal === 'data' && (
+              <>
+                <div className="viz-modal-header">
+                  <h3><DatabaseIcon /> Source data</h3>
+                  <button className="viz-modal-close" onClick={() => setActiveModal(null)}>×</button>
+                </div>
+                <div className="viz-modal-content">
+                  <div className="source-data-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Experiment</th>
+                          <th>Sample Count</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>Exp A</td><td>28</td><td>Complete</td></tr>
+                        <tr><td>Exp B</td><td>35</td><td>Complete</td></tr>
+                        <tr><td>Exp C</td><td>45</td><td>Complete</td></tr>
+                        <tr><td>Exp D</td><td>22</td><td>In Progress</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="source-data-info">
+                    <p><strong>Source:</strong> Proteomics Study 3</p>
+                    <p><strong>Records:</strong> 1,247 total • 4 displayed</p>
+                  </div>
+                </div>
+              </>
+            )}
+            {activeModal === 'query' && (
+              <>
+                <div className="viz-modal-header">
+                  <h3><QueryIcon /> Source query</h3>
+                  <button className="viz-modal-close" onClick={() => setActiveModal(null)}>×</button>
+                </div>
+                <div className="viz-modal-content">
+                  <pre className="source-code-block">{`SELECT experiment_name, COUNT(*) as sample_count
+FROM samples
+WHERE study_id = 'proteomics_study_3'
+  AND status IN ('Complete', 'In Progress')
+GROUP BY experiment_name
+ORDER BY experiment_name;`}</pre>
+                  <button className="viz-action-btn" style={{ marginTop: '12px' }}><CopyIcon /> Copy query</button>
+                </div>
+              </>
+            )}
+            {activeModal === 'code' && (
+              <>
+                <div className="viz-modal-header">
+                  <h3><CodeIcon /> Plot code</h3>
+                  <button className="viz-modal-close" onClick={() => setActiveModal(null)}>×</button>
+                </div>
+                <div className="viz-modal-content">
+                  <pre className="source-code-block">{`import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load data from TDP
+df = tdp.query("""
+  SELECT experiment_name, COUNT(*) as sample_count
+  FROM samples WHERE study_id = 'proteomics_study_3'
+  GROUP BY experiment_name
+""")
+
+# Create bar chart
+fig, ax = plt.subplots(figsize=(10, 6))
+colors = ['#1976D2', '#42A5F5', '#64B5F6', '#90CAF9']
+ax.bar(df['experiment_name'], df['sample_count'], color=colors)
+ax.set_xlabel('Experiment')
+ax.set_ylabel('Sample Count')
+ax.set_title('Sample Counts by Experiment')
+plt.tight_layout()
+plt.show()`}</pre>
+                  <button className="viz-action-btn" style={{ marginTop: '12px' }}><CopyIcon /> Copy code</button>
+                </div>
+              </>
+            )}
+            {activeModal === 'save' && (
+              <>
+                <div className="viz-modal-header">
+                  <h3><SaveIcon /> Save to dashboard</h3>
+                  <button className="viz-modal-close" onClick={() => setActiveModal(null)}>×</button>
+                </div>
+                <div className="viz-modal-content">
+                  <p className="save-modal-desc">Select a dashboard to add this visualization:</p>
+                  <div className="dashboard-list">
+                    {mockDashboards.map((dashboard) => (
+                      <button
+                        key={dashboard.id}
+                        className="dashboard-list-item"
+                        onClick={() => handleSaveToDashboard(dashboard.id, dashboard.name)}
+                      >
+                        {dashboard.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
-        <div className="current-viz-content">
-          {currentVisualization && renderVisualization(currentVisualization)}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
