@@ -55,25 +55,6 @@
   font-weight: 400;
 }
 
-/* Dark mode styles */
-@media (prefers-color-scheme: dark) {
-  .breadcrumb-link {
-    color: #7eb3e6;
-  }
-
-  .breadcrumb-link:hover {
-    color: #a3c9f0;
-  }
-
-  .breadcrumb-separator {
-    color: #b8bdc4;
-  }
-
-  .breadcrumb-current {
-    color: #e5e7eb;
-  }
-}
-
 /* Responsive Styles */
 @media (max-width: 768px) {
   .breadcrumb-list {

@@ -87,11 +87,26 @@
   color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 500;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .search-ai-btn:hover {
   color: var(--text-primary);
+}
+
+.search-ai-btn.active {
+  background-color: #1976D2;
+  color: white;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+}
+
+.search-ai-btn.active:hover {
+  background-color: #1565C0;
+}
+
+.search-ai-btn.active svg {
+  color: white !important;
 }
 
 /* Search Sections */
@@ -99,6 +114,11 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
+}
+
+/* When assistant is open, stack sections vertically on smaller screens */
+.search-page.assistant-open .search-sections {
+  grid-template-columns: 1fr;
 }
 
 /* Search Section */
@@ -224,7 +244,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1400px) {
   .search-filter-btn span,
   .search-ai-btn span {
     display: none;
@@ -232,6 +252,11 @@
 
   .search-filter-btn,
   .search-ai-btn {
+    padding: 0.5rem;
+  }
+
+  .search-filter-btn.active,
+  .search-ai-btn.active {
     padding: 0.5rem;
   }
 }
@@ -251,3 +276,33 @@
   }
 }
 
+/* Filter Button Active State */
+.search-filter-btn.active {
+  background-color: #1976D2;
+  color: white;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+}
+
+.search-filter-btn.active:hover {
+  background-color: #1565C0;
+}
+
+.search-filter-btn.active svg {
+  color: white !important;
+}
+
+/* Filter View */
+.search-filter-view {
+  margin-bottom: 2rem;
+  display: none;
+}
+
+.search-filter-view.visible {
+  display: block;
+}
+
+.search-filter-view .filter-card {
+  width: 100%;
+  box-sizing: border-box;
+}

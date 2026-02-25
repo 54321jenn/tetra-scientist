@@ -1,4 +1,7 @@
 import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import FilterCard, { FilterCardRef } from '../components/FilterCard';
+import SearchAssistant from '../components/SearchAssistant';
 import './SearchPage.css';
 
 // Icon components
@@ -39,6 +42,52 @@ interface SearchItem {
 
 function SearchPage() {
   const navigate = useNavigate();
+  const [showFilterView, setShowFilterView] = useState(false);
+  const [showAssistant, setShowAssistant] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [lastRemovedFilter, setLastRemovedFilter] = useState<string | null>(null);
+  const filterCardRef = useRef<FilterCardRef>(null);
+
+  // Poll for active filters when assistant is open
+  useEffect(() => {
+    if (!showAssistant) return;
+
+    const interval = setInterval(() => {
+      const filters = filterCardRef.current?.getActiveFilters() || [];
+      setActiveFilters(prev => {
+        if (JSON.stringify(prev) !== JSON.stringify(filters)) {
+          return filters;
+        }
+        return prev;
+      });
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [showAssistant]);
+
+  const handleAddFilter = (filterName: string) => {
+    // Map display names to filter keys
+    const filterMap: { [key: string]: string } = {
+      'File name': 'fileName',
+      'Created date': 'createdBetween',
+      'Instrument': 'instrument',
+      'Software': 'software',
+      'Tags': 'tags',
+      'File type': 'type',
+    };
+    const filterKey = filterMap[filterName] || filterName;
+    filterCardRef.current?.addFilter(filterKey);
+  };
+
+  const handleSetFilterValue = (filterName: string, value: string) => {
+    filterCardRef.current?.setFilterValue(filterName, value);
+  };
+
+  const handleFilterRemoved = (filterName: string) => {
+    if (showAssistant) {
+      setLastRemovedFilter(filterName);
+    }
+  };
 
   const savedSearches: SearchItem[] = [
     {
@@ -77,7 +126,7 @@ function SearchPage() {
   ];
 
   return (
-    <div className="search-page">
+    <div className={`search-page ${showAssistant ? 'assistant-open' : ''}`}>
       <h1 className="search-title">Search</h1>
 
       <div className="search-bar-container">
@@ -88,26 +137,46 @@ function SearchPage() {
             placeholder="Search"
             className="search-input"
           />
-          <button className="search-filter-btn" aria-label="Filter">
+          <button
+            className={`search-filter-btn ${showFilterView ? 'active' : ''}`}
+            onClick={() => setShowFilterView(!showFilterView)}
+            aria-label="Filter"
+          >
             <FilterIcon />
-            <span>Filter</span>
+            <span>Filters</span>
           </button>
-          <button className="search-ai-btn" aria-label="AI Mode">
+          <button
+            className={`search-ai-btn ${showAssistant ? 'active' : ''}`}
+            onClick={() => setShowAssistant(!showAssistant)}
+            aria-label="AI Assistant"
+          >
             <SparklesIcon />
             <span>AI Assistant</span>
           </button>
         </div>
       </div>
 
+      <div className={`search-filter-view ${showFilterView ? 'visible' : ''} ${showAssistant ? 'assistant-open' : ''}`}>
+        <FilterCard
+          ref={filterCardRef}
+          onClose={() => setShowFilterView(false)}
+          onSearch={() => {
+            setShowFilterView(false);
+            navigate('/search-results', { state: { assistantOpen: showAssistant } });
+          }}
+          onFilterRemoved={handleFilterRemoved}
+        />
+      </div>
+
       <div className="search-sections">
         <div className="search-section">
-          <h3 className="search-section-title">Saved Searches</h3>
+          <h3 className="search-section-title">Saved searches</h3>
           <div className="search-list">
             {savedSearches.map((item, index) => (
               <div
                 key={index}
                 className="search-list-item"
-                onClick={() => navigate('/search-results')}
+                onClick={() => navigate('/search-results', { state: { assistantOpen: showAssistant } })}
                 style={{ cursor: 'pointer' }}
               >
                 <div className="search-item-icon">{item.icon}</div>
@@ -124,10 +193,15 @@ function SearchPage() {
         </div>
 
         <div className="search-section">
-          <h3 className="search-section-title">Recent Searches</h3>
+          <h3 className="search-section-title">Recent searches</h3>
           <div className="search-list">
             {recentSearches.map((item, index) => (
-              <div key={index} className="search-list-item">
+              <div
+                key={index}
+                className="search-list-item"
+                onClick={() => navigate('/search-results', { state: { assistantOpen: showAssistant } })}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="search-item-icon">{item.icon}</div>
                 <div className="search-item-text">
                   <div className="search-item-title">{item.title}</div>
@@ -141,6 +215,27 @@ function SearchPage() {
           </div>
         </div>
       </div>
+
+      <SearchAssistant
+        isOpen={showAssistant}
+        onClose={() => setShowAssistant(false)}
+        onBuildFilters={() => {
+          setShowFilterView(true);
+        }}
+        onAddFilter={handleAddFilter}
+        onSetFilterValue={handleSetFilterValue}
+        activeFilters={activeFilters}
+        lastRemovedFilter={lastRemovedFilter}
+        onFilterRemovalHandled={() => setLastRemovedFilter(null)}
+        onSearch={(searchType) => {
+          // Navigate to search results with the detected search type and keep assistant open
+          navigate('/search-results', { state: { searchType, assistantOpen: true } });
+        }}
+        onSaveFilter={() => {
+          // TODO: Implement save filter functionality
+          console.log('Save filter clicked');
+        }}
+      />
     </div>
   );
 }

@@ -3,14 +3,14 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  color-scheme: light;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Light mode colors (default) */
+  /* Light mode colors */
   --bg-primary: #ffffff;
   --bg-secondary: #f9fafb;
   --text-primary: #1a1a1a;
@@ -64,77 +64,4 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: none;
-}
-
-/* Dark mode - Stone Gray brand colors */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #2d3642;
-    --bg-secondary: #3a4554;
-    --text-primary: #e5e7eb;
-    --text-secondary: #b8bdc4;
-    --border-color: #232930;
-    --sidebar-bg: #2d3642;
-    --toolbar-bg: #2d3642;
-    --card-bg: #3a4554;
-    --hover-bg: #3d4856;
-  }
-
-  /* Card component styling */
-  .card {
-    background-color: var(--card-bg);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1rem;
-  }
-
-  /* Table styling */
-  table {
-    background-color: var(--card-bg);
-    color: var(--text-primary);
-  }
-  
-  table th {
-    background-color: var(--hover-bg);
-    font-weight: 600;
-  }
-  
-  table tr:hover {
-    background-color: var(--hover-bg);
-  }
-
-  [class*="Table"] th {
-    background-color: var(--bg-secondary) !important;
-    color: var(--text-primary) !important;
-    border-color: var(--border-color) !important;
-  }
-
-  [class*="Table"] td {
-    background-color: var(--card-bg) !important;
-    color: var(--text-primary) !important;
-    border-color: var(--border-color) !important;
-  }
-
-  [class*="Table"] tr:hover td {
-    background-color: var(--hover-bg) !important;
-  }
-
-  /* Override Input, Label, and other form components */
-  [class*="Input"],
-  [class*="TextArea"],
-  [class*="Select"] {
-    background-color: var(--bg-secondary) !important;
-    color: var(--text-primary) !important;
-    border-color: var(--border-color) !important;
-  }
-
-  [class*="Label"] {
-    color: var(--text-primary) !important;
-  }
-
-  /* Override Button components */
-  [class*="Button"] {
-    border-color: var(--border-color) !important;
-  }
 }

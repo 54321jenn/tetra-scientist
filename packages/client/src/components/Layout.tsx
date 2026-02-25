@@ -4,6 +4,7 @@ import './Layout.css';
 import Toolbar from './Toolbar';
 import SecondaryToolbar from './SecondaryToolbar';
 import CustomSidebar from './CustomSidebar';
+import { ToolbarProvider, useToolbar } from '../contexts/ToolbarContext';
 
 // Define sidebar items based on the app's routes
 // Using IconName enum values from the TetraScience Toolkit
@@ -15,7 +16,7 @@ const sidebarItems = [
   },
   {
     icon: 'database',
-    label: 'My Data',
+    label: 'My data',
     path: '/data-table',
   },
   {
@@ -28,13 +29,24 @@ const sidebarItems = [
     label: 'Apps',
     path: '/apps',
   },
+  {
+    icon: 'chart',
+    label: 'Visualize data',
+    path: '/visualize',
+  },
+  {
+    icon: 'dashboard',
+    label: 'Dashboards',
+    path: '/dashboards',
+  },
 ];
 
-function Layout() {
+function LayoutContent() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { rightActions } = useToolbar();
 
   // Check if we're on mobile (only phones, not tablets)
   useEffect(() => {
@@ -125,12 +137,20 @@ function Layout() {
           isSidebarCollapsed={isSidebarCollapsed}
           onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
-        {location.pathname !== '/' && <SecondaryToolbar />}
+        {location.pathname !== '/' && <SecondaryToolbar rightActions={rightActions} />}
         <div className="page-content">
           <Outlet />
         </div>
       </div>
     </div>
+  );
+}
+
+function Layout() {
+  return (
+    <ToolbarProvider>
+      <LayoutContent />
+    </ToolbarProvider>
   );
 }
 

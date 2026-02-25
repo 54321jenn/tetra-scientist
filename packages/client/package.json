@@ -1,5 +1,5 @@
 {
-  "name": "@ts-design-patterns/client",
+  "name": "@ts-tdp-sci-ux/client",
   "description": "Tetra Scientist Experience",
   "private": true,
   "version": "0.1.0",
@@ -17,6 +17,11 @@
     "node": ">=20.0.0 <21.0.0"
   },
   "dependencies": {
+    "3dmol": "^2.5.4",
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@rdkit/rdkit": "^2025.3.4-1.0.0",
+    "igv": "^3.7.3",
+    "molstar": "^5.6.1",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-markdown": "^10.1.0",
@@ -28,7 +33,6 @@
     "@eslint/js": "^9.21.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
-    "@types/react-router-dom": "^5.3.3",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/browser": "^3.0.9",

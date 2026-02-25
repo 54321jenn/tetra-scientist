@@ -1,15 +1,16 @@
 import { useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import './Toolbar.css';
+import { useUserMode } from '../contexts/UserModeContext';
 
 const pageTitles: Record<string, string> = {
-  '/': 'Tetra Data Platform',
-  '/data-table': 'My Data',
+  '/': 'Home',
+  '/data-table': 'My data',
   '/search': 'Search',
-  '/search-results': 'Search Results',
-  '/file-details': 'File Details',
+  '/search-results': 'Search results',
   '/apps': 'Apps',
-  '/contributing': 'Contributing',
+  '/visualize': 'Visualize data',
+  '/dashboards': 'Dashboards',
 };
 
 interface ToolbarProps {
@@ -19,7 +20,19 @@ interface ToolbarProps {
 
 function Toolbar({ isSidebarCollapsed, onToggleSidebar }: ToolbarProps) {
   const location = useLocation();
-  const title = pageTitles[location.pathname] || 'Page';
+  const { userMode, toggleUserMode } = useUserMode();
+
+  // Get the page title, checking for dynamic routes
+  let title = pageTitles[location.pathname];
+  if (!title) {
+    // Check if it's a details page
+    if (location.pathname.startsWith('/details/')) {
+      title = 'Details';
+    } else {
+      title = 'Page';
+    }
+  }
+
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -61,10 +74,9 @@ function Toolbar({ isSidebarCollapsed, onToggleSidebar }: ToolbarProps) {
             onClick={onToggleSidebar}
             aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3" ry="3"></rect>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
             </svg>
           </button>
           <h1 className="toolbar-title">{title}</h1>
@@ -143,6 +155,19 @@ function Toolbar({ isSidebarCollapsed, onToggleSidebar }: ToolbarProps) {
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
                   My Account
+                </button>
+                <div className="account-dropdown-divider"></div>
+                <button className="account-dropdown-item" onClick={() => {
+                  toggleUserMode();
+                  setIsAccountDropdownOpen(false);
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  Switch to {userMode === 'scientist' ? 'IT' : 'Scientist'} Mode
                 </button>
                 <div className="account-dropdown-divider"></div>
                 <button className="account-dropdown-item" onClick={() => console.log('Logout clicked')}>

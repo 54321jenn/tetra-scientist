@@ -1,5 +1,4 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import './CustomSidebar.css';
 import manifest from '../../../../manifest.json';
 
@@ -54,32 +53,33 @@ const iconMap: Record<string, JSX.Element> = {
       <path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z" />
     </svg>
   ),
+  chart: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M3 13h2v8H3v-8zm6-6h2v14H9V7zm6 3h2v11h-2V10zm6-7h2v18h-2V3z" />
+    </svg>
+  ),
+  dashboard: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M7 14l3-3 3 3 5-5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="7" cy="14" r="1.5" fill="currentColor"/>
+      <circle cx="10" cy="11" r="1.5" fill="currentColor"/>
+      <circle cx="13" cy="14" r="1.5" fill="currentColor"/>
+      <circle cx="18" cy="9" r="1.5" fill="currentColor"/>
+    </svg>
+  ),
 };
 
 function CustomSidebar({ items, isCollapsed = false }: CustomSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // Detect dark mode
-  useEffect(() => {
-    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDarkMode(darkModeQuery.matches);
-
-    const handleChange = (e: MediaQueryListEvent) => {
-      setIsDarkMode(e.matches);
-    };
-
-    darkModeQuery.addEventListener('change', handleChange);
-    return () => darkModeQuery.removeEventListener('change', handleChange);
-  }, []);
 
   const handleClick = (path: string) => {
     navigate(path);
   };
 
-  const logoSrc = isDarkMode ? '/logo_white.svg' : '/logo.svg';
-  const iconSrc = isDarkMode ? '/icon_white.png' : `/${manifest.icon.replace('images/', '')}`;
+  const logoSrc = '/logo.svg';
+  const iconSrc = `/${manifest.icon.replace('images/', '')}`;
 
   return (
     <nav className={`custom-sidebar ${isCollapsed ? 'collapsed' : ''}`}>

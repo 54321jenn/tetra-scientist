@@ -1,6 +1,18 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import './FileDetailsPage.css';
+import SpreadsheetViewer, { SpreadsheetData } from '../components/SpreadsheetViewer';
+import FileAssistant from '../components/FileAssistant';
+
+interface FileData {
+  id: string;
+  name: string;
+  sourceLocation: string;
+  uploadedAt: string;
+  uploadedAtRelative: string;
+  fileType: 'document' | 'zip' | 'csv' | 'xlsx' | 'xls';
+  content?: string;
+}
 
 const BackIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -8,10 +20,11 @@ const BackIcon = () => (
   </svg>
 );
 
-const EyeIcon = () => (
+const OpenIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+    <polyline points="15 3 21 3 21 9"></polyline>
+    <line x1="10" y1="14" x2="21" y2="3"></line>
   </svg>
 );
 
@@ -83,10 +96,54 @@ const CheckIcon = () => (
   </svg>
 );
 
+// AI Assistant icon
+const AIAssistantIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+    <path d="M2 17l10 5 10-5"></path>
+    <path d="M2 12l10 5 10-5"></path>
+  </svg>
+);
+
 function FileDetailsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { id } = useParams<{ id: string }>();
   const [showHistory, setShowHistory] = useState(false);
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Get data from navigation state or use default
+  const fileData = (location.state as { data?: FileData })?.data || {
+    id: id || '1',
+    name: 'Proteomics-Study3-Protocol.txt',
+    sourceLocation: '/tetrasphere/proteomics/study-3/docs',
+    uploadedAt: '01/09/2026 04:30:00 PM EST',
+    uploadedAtRelative: 'Yesterday',
+    fileType: 'document' as const,
+  };
+
+  // Mock spreadsheet data - similar to Google Sheets/Gemini example
+  const spreadsheetData: SpreadsheetData = {
+    columns: ['A', 'B', 'C', 'D', 'E'],
+    rows: [
+      { rowNumber: 1, cells: [{ value: 'Organization' }, { value: 'Total Pipeline Executions' }, { value: 'Successful' }, { value: 'Failed' }, { value: 'Success Rate' }] },
+      { rowNumber: 2, cells: [{ value: 'Acme Labs' }, { value: 1250 }, { value: 1180 }, { value: 70 }, { value: '94.4%' }] },
+      { rowNumber: 3, cells: [{ value: 'BioTech Solutions' }, { value: 890 }, { value: 845 }, { value: 45 }, { value: '94.9%' }] },
+      { rowNumber: 4, cells: [{ value: 'Genome Research Inc' }, { value: 2100 }, { value: 1995 }, { value: 105 }, { value: '95.0%' }] },
+      { rowNumber: 5, cells: [{ value: 'Pharma Analytics' }, { value: 756 }, { value: 718 }, { value: 38 }, { value: '95.0%' }] },
+      { rowNumber: 6, cells: [{ value: 'Research Partners' }, { value: 1580 }, { value: 1501 }, { value: 79 }, { value: '95.0%' }] },
+      { rowNumber: 7, cells: [{ value: 'Data Science Co' }, { value: 920 }, { value: 883 }, { value: 37 }, { value: '96.0%' }] },
+      { rowNumber: 8, cells: [{ value: 'Clinical Insights' }, { value: 1100 }, { value: 1056 }, { value: 44 }, { value: '96.0%' }] },
+      { rowNumber: 9, cells: [{ value: 'Molecular Dynamics' }, { value: 680 }, { value: 653 }, { value: 27 }, { value: '96.0%' }] },
+      { rowNumber: 10, cells: [{ value: 'Life Sciences Ltd' }, { value: 1450 }, { value: 1392 }, { value: 58 }, { value: '96.0%' }] },
+      { rowNumber: 11, cells: [{ value: 'Discovery Labs' }, { value: 2340 }, { value: 2270 }, { value: 70 }, { value: '97.0%' }] },
+      { rowNumber: 12, cells: [{ value: '' }, { value: '' }, { value: '' }, { value: '' }, { value: '' }] },
+      { rowNumber: 13, cells: [{ value: 'Total' }, { value: 13066 }, { value: 12493 }, { value: 573 }, { value: '95.6%' }] },
+    ],
+  };
+
+  const isSpreadsheet = fileData.fileType === 'xlsx' || fileData.fileType === 'xls';
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -96,75 +153,133 @@ function FileDetailsPage() {
 
   return (
     <div className="file-details-page">
+      <div className="back-button-container">
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <BackIcon />
+          <span>Back</span>
+        </button>
+      </div>
       <div className="file-details-content">
         <div className="file-details-main">
           <div className="file-details-left">
             <div className="attributes-section">
               <h3>Attributes</h3>
-              <div className="attribute-item">
-                <div className="attribute-value">Proteomics Study 3</div>
-                <div className="attribute-label">Study Name</div>
-                <button className="copy-btn" onClick={() => handleCopy('Proteomics Study 3', 'attr-study-name')}>
-                  {copiedId === 'attr-study-name' ? <CheckIcon /> : <CopyIcon />}
-                </button>
-              </div>
-              <div className="attribute-item">
-                <div className="attribute-value">Protocol</div>
-                <div className="attribute-label">Document Type</div>
-                <button className="copy-btn" onClick={() => handleCopy('Protocol', 'attr-doc-type')}>
-                  {copiedId === 'attr-doc-type' ? <CheckIcon /> : <CopyIcon />}
-                </button>
-              </div>
-              <div className="attribute-item">
-                <div className="attribute-value">Dr. Sarah Chen</div>
-                <div className="attribute-label">Principal Investigator</div>
-                <button className="copy-btn" onClick={() => handleCopy('Dr. Sarah Chen', 'attr-pi')}>
-                  {copiedId === 'attr-pi' ? <CheckIcon /> : <CopyIcon />}
-                </button>
-              </div>
+              {isSpreadsheet ? (
+                <>
+                  <div className="attribute-item">
+                    <div className="attribute-value">Pipeline Analytics</div>
+                    <div className="attribute-label">Report Type</div>
+                    <button className="copy-btn" onClick={() => handleCopy('Pipeline Analytics', 'attr-report-type')}>
+                      {copiedId === 'attr-report-type' ? <CheckIcon /> : <CopyIcon />}
+                    </button>
+                  </div>
+                  <div className="attribute-item">
+                    <div className="attribute-value">Q1 2026</div>
+                    <div className="attribute-label">Time Period</div>
+                    <button className="copy-btn" onClick={() => handleCopy('Q1 2026', 'attr-time-period')}>
+                      {copiedId === 'attr-time-period' ? <CheckIcon /> : <CopyIcon />}
+                    </button>
+                  </div>
+                  <div className="attribute-item">
+                    <div className="attribute-value">Operations Team</div>
+                    <div className="attribute-label">Owner</div>
+                    <button className="copy-btn" onClick={() => handleCopy('Operations Team', 'attr-owner')}>
+                      {copiedId === 'attr-owner' ? <CheckIcon /> : <CopyIcon />}
+                    </button>
+                  </div>
+                </>
+              ) : fileData.sourceLocation.includes('chromatography') ? (
+                <>
+                  <div className="attribute-item">
+                    <div className="attribute-value">Chromatography Analysis</div>
+                    <div className="attribute-label">Analysis Type</div>
+                    <button className="copy-btn" onClick={() => handleCopy('Chromatography Analysis', 'attr-analysis-type')}>
+                      {copiedId === 'attr-analysis-type' ? <CheckIcon /> : <CopyIcon />}
+                    </button>
+                  </div>
+                  <div className="attribute-item">
+                    <div className="attribute-value">{fileData.sourceLocation.includes('hplc') ? 'HPLC' : fileData.sourceLocation.includes('lc-ms') ? 'LC-MS' : fileData.sourceLocation.includes('gc') ? 'GC' : 'Unknown'}</div>
+                    <div className="attribute-label">Instrument Type</div>
+                    <button className="copy-btn" onClick={() => handleCopy(fileData.sourceLocation.includes('hplc') ? 'HPLC' : fileData.sourceLocation.includes('lc-ms') ? 'LC-MS' : fileData.sourceLocation.includes('gc') ? 'GC' : 'Unknown', 'attr-instrument')}>
+                      {copiedId === 'attr-instrument' ? <CheckIcon /> : <CopyIcon />}
+                    </button>
+                  </div>
+                  <div className="attribute-item">
+                    <div className="attribute-value">Raw Data</div>
+                    <div className="attribute-label">Data Type</div>
+                    <button className="copy-btn" onClick={() => handleCopy('Raw Data', 'attr-data-type')}>
+                      {copiedId === 'attr-data-type' ? <CheckIcon /> : <CopyIcon />}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="attribute-item">
+                    <div className="attribute-value">Proteomics Study 3</div>
+                    <div className="attribute-label">Study Name</div>
+                    <button className="copy-btn" onClick={() => handleCopy('Proteomics Study 3', 'attr-study-name')}>
+                      {copiedId === 'attr-study-name' ? <CheckIcon /> : <CopyIcon />}
+                    </button>
+                  </div>
+                  <div className="attribute-item">
+                    <div className="attribute-value">Protocol</div>
+                    <div className="attribute-label">Document Type</div>
+                    <button className="copy-btn" onClick={() => handleCopy('Protocol', 'attr-doc-type')}>
+                      {copiedId === 'attr-doc-type' ? <CheckIcon /> : <CopyIcon />}
+                    </button>
+                  </div>
+                  <div className="attribute-item">
+                    <div className="attribute-value">Dr. Sarah Chen</div>
+                    <div className="attribute-label">Principal Investigator</div>
+                    <button className="copy-btn" onClick={() => handleCopy('Dr. Sarah Chen', 'attr-pi')}>
+                      {copiedId === 'attr-pi' ? <CheckIcon /> : <CopyIcon />}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="information-section">
               <h3>Information</h3>
               <div className="info-item">
-                <div className="info-value">Proteomics-Study3-Protocol.txt</div>
+                <div className="info-value">{fileData.name}</div>
                 <div className="info-label">File Name</div>
-                <button className="copy-btn" onClick={() => handleCopy('Proteomics-Study3-Protocol.txt', 'info-file-name')}>
+                <button className="copy-btn" onClick={() => handleCopy(fileData.name, 'info-file-name')}>
                   {copiedId === 'info-file-name' ? <CheckIcon /> : <CopyIcon />}
                 </button>
               </div>
               <div className="info-item">
-                <div className="info-value">file-ps3-001</div>
+                <div className="info-value">{fileData.id}</div>
                 <div className="info-label">File ID</div>
-                <button className="copy-btn" onClick={() => handleCopy('file-ps3-001', 'info-file-id')}>
+                <button className="copy-btn" onClick={() => handleCopy(fileData.id, 'info-file-id')}>
                   {copiedId === 'info-file-id' ? <CheckIcon /> : <CopyIcon />}
                 </button>
               </div>
               <div className="info-item">
-                <div className="info-value">/tetrasphere/proteomics/study-3/docs</div>
+                <div className="info-value">{fileData.sourceLocation}</div>
                 <div className="info-label">File Path</div>
-                <button className="copy-btn" onClick={() => handleCopy('/tetrasphere/proteomics/study-3/docs', 'info-file-path')}>
+                <button className="copy-btn" onClick={() => handleCopy(fileData.sourceLocation, 'info-file-path')}>
                   {copiedId === 'info-file-path' ? <CheckIcon /> : <CopyIcon />}
                 </button>
               </div>
               <div className="info-item">
-                <div className="info-value">/tetrasphere/proteomics/study-3/docs</div>
+                <div className="info-value">{fileData.sourceLocation}</div>
                 <div className="info-label">Source Location</div>
-                <button className="copy-btn" onClick={() => handleCopy('/tetrasphere/proteomics/study-3/docs', 'info-source-location')}>
+                <button className="copy-btn" onClick={() => handleCopy(fileData.sourceLocation, 'info-source-location')}>
                   {copiedId === 'info-source-location' ? <CheckIcon /> : <CopyIcon />}
                 </button>
               </div>
               <div className="info-item">
-                <div className="info-value">01/09/2026, 04:30:00 PM EST</div>
+                <div className="info-value">{fileData.uploadedAt}</div>
                 <div className="info-label">Upload date</div>
-                <button className="copy-btn" onClick={() => handleCopy('01/09/2026, 04:30:00 PM EST', 'info-upload-date')}>
+                <button className="copy-btn" onClick={() => handleCopy(fileData.uploadedAt, 'info-upload-date')}>
                   {copiedId === 'info-upload-date' ? <CheckIcon /> : <CopyIcon />}
                 </button>
               </div>
               <div className="info-item">
-                <div className="info-value">Text Document</div>
+                <div className="info-value">{fileData.fileType === 'xlsx' || fileData.fileType === 'xls' ? 'Excel Spreadsheet' : fileData.fileType === 'csv' ? 'CSV File' : fileData.fileType === 'zip' ? 'ZIP Archive' : 'Document'}</div>
                 <div className="info-label">Source Type</div>
-                <button className="copy-btn" onClick={() => handleCopy('Text Document', 'info-source-type')}>
+                <button className="copy-btn" onClick={() => handleCopy(fileData.fileType === 'xlsx' || fileData.fileType === 'xls' ? 'Excel Spreadsheet' : fileData.fileType === 'csv' ? 'CSV File' : fileData.fileType === 'zip' ? 'ZIP Archive' : 'Document', 'info-source-type')}>
                   {copiedId === 'info-source-type' ? <CheckIcon /> : <CopyIcon />}
                 </button>
               </div>
@@ -181,11 +296,10 @@ function FileDetailsPage() {
           <div className="file-details-right">
             <div className="preview-section">
               <div className="preview-header">
-                <h3>Preview</h3>
                 <div className="preview-actions">
                   <button className="preview-action-btn">
-                    <EyeIcon />
-                    <span>View</span>
+                    <OpenIcon />
+                    <span>Open</span>
                   </button>
                   <button className="preview-action-btn">
                     <BookmarkIcon />
@@ -207,17 +321,38 @@ function FileDetailsPage() {
                     <HistoryIcon />
                     <span>History</span>
                   </button>
+                  <button
+                    className={`preview-action-btn${showAIAssistant ? ' active' : ''}`}
+                    onClick={() => setShowAIAssistant(!showAIAssistant)}
+                    title="AI Assistant"
+                  >
+                    <AIAssistantIcon />
+                    <span>AI Assistant</span>
+                  </button>
                   <button className="preview-action-btn">
                     <MoreIcon />
                   </button>
                 </div>
               </div>
-              <div className="preview-content">
-                <button className="preview-copy-btn" onClick={() => handleCopy('Proteomics-Study3-Protocol.txt', 'preview-copy')}>
-                  {copiedId === 'preview-copy' ? <CheckIcon /> : <CopyIcon />}
-                </button>
-                <div className="preview-title"># Proteomics Study 3 - Experimental Protocol</div>
-                <div className="preview-text">
+              {isSpreadsheet ? (
+                <div className="spreadsheet-layout">
+                  <div className="spreadsheet-preview-container">
+                    <SpreadsheetViewer data={spreadsheetData} fileName={fileData.name} />
+                  </div>
+                  <div className="file-assistant-container">
+                    <FileAssistant spreadsheetData={spreadsheetData} fileName={fileData.name} onClose={() => setShowAIAssistant(false)} />
+                  </div>
+                </div>
+              ) : (
+              <div className={`document-layout${showAIAssistant ? ' with-assistant' : ''}`}>
+                <div className="preview-content">
+                  {!fileData.sourceLocation.includes('chromatography') ? (
+                    <>
+                      <button className="preview-copy-btn" onClick={() => handleCopy('Proteomics-Study3-Protocol.txt', 'preview-copy')}>
+                        {copiedId === 'preview-copy' ? <CheckIcon /> : <CopyIcon />}
+                      </button>
+                      <div className="preview-title"># Proteomics Study 3 - Experimental Protocol</div>
+                      <div className="preview-text">
                   <p className="separator">================================================================================</p>
                   <p><strong>PROTEOMICS STUDY 3: COMPARATIVE PROTEIN EXPRESSION ANALYSIS</strong></p>
                   <p className="separator">================================================================================</p>
@@ -392,7 +527,21 @@ function FileDetailsPage() {
                   <p>End of Protocol Document</p>
                   <p className="separator">================================================================================</p>
                 </div>
+                    </>
+                  ) : (
+                    <div className="preview-text" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                      <p>Preview not available for this file type.</p>
+                      <p style={{ marginTop: '1rem', fontSize: '0.875rem' }}>Use the "Download" or "Open" button above to view the file contents.</p>
+                    </div>
+                  )}
+                </div>
+                {showAIAssistant && (
+                  <div className="file-assistant-container">
+                    <FileAssistant fileName={fileData.name} onClose={() => setShowAIAssistant(false)} />
+                  </div>
+                )}
               </div>
+              )}
             </div>
           </div>
         </div>
