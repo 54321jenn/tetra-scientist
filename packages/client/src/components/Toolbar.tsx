@@ -11,6 +11,7 @@ const pageTitles: Record<string, string> = {
   '/apps': 'Apps',
   '/visualize': 'Visualize data',
   '/dashboards': 'Dashboards',
+  '/upload': 'Upload',
 };
 
 interface ToolbarProps {
